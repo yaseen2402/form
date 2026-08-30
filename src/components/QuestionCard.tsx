@@ -140,13 +140,38 @@ export function QuestionCard() {
             </p>
           )}
 
-          <button
-            onClick={() => setActiveQuestionIndex(1)}
-            className="w-full mt-4 py-2.5 px-4 bg-zinc-950 hover:bg-zinc-800 text-white font-medium text-xs tracking-wider uppercase transition flex items-center justify-center gap-2"
-          >
-            <span>Begin Intake</span>
-            <ArrowRight className="w-3.5 h-3.5" />
-          </button>
+          <div className="flex gap-2 mt-4">
+            <button
+              type="button"
+              onClick={handleMicToggle}
+              className={`flex items-center justify-center gap-1.5 py-2.5 px-3 border text-xs font-mono transition ${
+                isListening
+                  ? "bg-zinc-950 text-white border-zinc-950 animate-pulse"
+                  : "bg-white border-zinc-300 hover:border-zinc-950 text-zinc-800"
+              }`}
+              title="Start hands-free continuous voice"
+            >
+              {isListening ? (
+                <>
+                  <MicOff className="w-3.5 h-3.5" />
+                  <span>Listening...</span>
+                </>
+              ) : (
+                <>
+                  <Mic className="w-3.5 h-3.5" />
+                  <span>Speak</span>
+                </>
+              )}
+            </button>
+
+            <button
+              onClick={() => setActiveQuestionIndex(1)}
+              className="flex-1 py-2.5 px-4 bg-zinc-950 hover:bg-zinc-800 text-white font-medium text-xs tracking-wider uppercase transition flex items-center justify-center gap-2"
+            >
+              <span>Begin Intake</span>
+              <ArrowRight className="w-3.5 h-3.5" />
+            </button>
+          </div>
         </div>
       </div>
     );
@@ -180,19 +205,19 @@ export function QuestionCard() {
       {/* Inline Live Voice Feedback (visible only when active) */}
       {(isListening || isProcessing || liveTranscript) && (
         <div className="mb-4 p-2.5 bg-zinc-50 border border-zinc-200 text-xs font-mono flex items-center justify-between text-zinc-900">
-          <div className="flex items-center gap-2">
-            <span className={`w-1.5 h-1.5 rounded-full ${isListening ? "bg-zinc-950 animate-ping" : "bg-zinc-400"}`} />
-            <span>{liveTranscript || (isProcessing ? "Analyzing clinical cues with Gemini..." : "Listening (English / Hinglish)...")}</span>
+          <div className="flex items-center gap-2 overflow-hidden">
+            <span className={`w-2 h-2 rounded-full shrink-0 ${isListening ? "bg-zinc-950 animate-ping" : "bg-zinc-400"}`} />
+            <span className="truncate">
+              {liveTranscript || (isProcessing ? "Auto-filling fields..." : "Continuous Voice active · speak answers freely")}
+            </span>
           </div>
-          {isListening && liveTranscript && (
+          {isListening && (
             <button
-              onClick={() => {
-                stopListening();
-                processTranscript(liveTranscript);
-              }}
-              className="text-[10px] font-mono px-2 py-0.5 bg-zinc-950 text-white"
+              onClick={handleMicToggle}
+              className="text-[10px] font-mono px-2 py-0.5 border border-zinc-300 hover:border-zinc-950 text-zinc-700 hover:text-zinc-950 shrink-0 ml-2"
+              title="Stop continuous listening"
             >
-              Done
+              Stop
             </button>
           )}
         </div>
@@ -200,7 +225,7 @@ export function QuestionCard() {
 
       {recentFieldUpdates.length > 0 && (
         <div className="mb-4 p-2 bg-zinc-100 border border-zinc-300 text-xs font-mono text-zinc-950 flex items-center gap-2">
-          <Check className="w-3.5 h-3.5 shrink-0" />
+          <Check className="w-3.5 h-3.5 shrink-0 text-zinc-950" />
           <span>Captured: {recentFieldUpdates.join(", ")}</span>
         </div>
       )}
@@ -215,7 +240,7 @@ export function QuestionCard() {
           <span>Prev</span>
         </button>
 
-        {/* Voice Button in the same row - strictly whitespace-nowrap */}
+        {/* Continuous Hands-Free Voice Button */}
         <button
           onClick={handleMicToggle}
           disabled={isProcessing}
@@ -224,23 +249,25 @@ export function QuestionCard() {
               ? "bg-zinc-950 text-white border-zinc-950 animate-pulse"
               : "bg-white border-zinc-300 hover:border-zinc-950 text-zinc-800"
           }`}
-          title="Speak your answer in English or Hinglish"
+          title={isListening ? "Continuous listening is active. Tap to stop." : "Tap once to speak answers continuously"}
         >
           {isProcessing ? (
             <>
               <Loader2 className="w-3.5 h-3.5 animate-spin shrink-0" />
-              <span className="whitespace-nowrap">Analyzing...</span>
+              <span className="whitespace-nowrap">Filling...</span>
             </>
           ) : isListening ? (
             <>
               <MicOff className="w-3.5 h-3.5 shrink-0" />
-              <span className="whitespace-nowrap">Stop</span>
+              <span className="whitespace-nowrap font-medium">
+                Listening <span className="hidden sm:inline">(Live)</span>
+              </span>
             </>
           ) : (
             <>
               <Mic className="w-3.5 h-3.5 shrink-0" />
               <span className="whitespace-nowrap">
-                Speak <span className="hidden sm:inline">Answer</span>
+                Speak <span className="hidden sm:inline">Answers</span>
               </span>
             </>
           )}

@@ -163,6 +163,53 @@ export function IntakeProvider({ children }: { children: React.ReactNode }) {
     []
   );
 
+  // Check whether a question index is answered
+  const checkQuestionAnswered = (idx: number, data: IntakeFormData): boolean => {
+    const isMale = data.patient_sex === "male";
+    switch (idx) {
+      case 0:
+        return !!data.patient_name && !!data.patient_sex && data.patient_age !== null;
+      case 1:
+        return data.age_hair_loss_began !== null;
+      case 2:
+        return data.duration !== null;
+      case 3:
+        return !!data.family_history && data.family_history.length > 0;
+      case 4:
+        return !!data.pattern && data.pattern.length > 0;
+      case 5:
+        return !!data.diagnosed_conditions && data.diagnosed_conditions.length > 0;
+      case 6:
+        return isMale || data.menstrual_cycle !== null;
+      case 7:
+        return isMale || data.pregnancy_related !== null;
+      case 8:
+        return data.adult_acne_oily_skin !== null;
+      case 9:
+        return data.excess_body_facial_hair !== null;
+      case 10:
+        return !!data.past_6_months && data.past_6_months.length > 0;
+      case 11:
+        return (
+          data.habits.hair_wash_frequency !== null ||
+          data.habits.smoking !== null ||
+          data.habits.hard_water !== null
+        );
+      case 12:
+        return Object.values(data.products).some((p) => p.used);
+      case 13:
+        return Object.values(data.procedures).some((p) => p.done);
+      case 14:
+        return data.past_treatment_side_effects !== null;
+      case 15:
+        return data.sample_type !== null;
+      case 16:
+        return data.consent !== null;
+      default:
+        return false;
+    }
+  };
+
   const applyExtractedDelta = useCallback(
     (
       delta: Partial<IntakeFormData>,
@@ -170,6 +217,8 @@ export function IntakeProvider({ children }: { children: React.ReactNode }) {
       agentReply?: string,
       suggestedNextQuestion?: number
     ) => {
+      let nextState: IntakeFormData | null = null;
+
       setFormData((prev) => {
         const next = { ...prev };
 
@@ -193,6 +242,7 @@ export function IntakeProvider({ children }: { children: React.ReactNode }) {
           next.pregnancy_related = "Not applicable";
         }
 
+        nextState = next;
         return next;
       });
 
@@ -205,17 +255,40 @@ export function IntakeProvider({ children }: { children: React.ReactNode }) {
         setLastAgentReply(agentReply);
       }
 
-      // If suggested next question is provided, advance to it if appropriate
-      if (suggestedNextQuestion && suggestedNextQuestion > activeQuestionIndex && suggestedNextQuestion <= 16) {
-        // Check if male and skipping female-only questions 6 & 7
-        if (formData.patient_sex === "male" && (suggestedNextQuestion === 6 || suggestedNextQuestion === 7)) {
-          setActiveQuestionIndex(8);
-        } else {
-          setActiveQuestionIndex(suggestedNextQuestion);
+      // Continuous Voice Auto-Advance: if active question was answered, advance to next unanswered
+      if (nextState) {
+        const state = nextState as IntakeFormData;
+        const isMale = state.patient_sex === "male";
+        const currentAnswered = checkQuestionAnswered(activeQuestionIndex, state);
+
+        if (currentAnswered) {
+          let nextUnanswered = activeQuestionIndex + 1;
+          while (nextUnanswered <= 16) {
+            if (isMale && (nextUnanswered === 6 || nextUnanswered === 7)) {
+              nextUnanswered++;
+              continue;
+            }
+            if (!checkQuestionAnswered(nextUnanswered, state)) {
+              break;
+            }
+            nextUnanswered++;
+          }
+
+          if (nextUnanswered > activeQuestionIndex && nextUnanswered <= 16) {
+            setTimeout(() => {
+              setActiveQuestionIndex(nextUnanswered);
+            }, 600);
+          }
+        } else if (suggestedNextQuestion && suggestedNextQuestion > activeQuestionIndex && suggestedNextQuestion <= 16) {
+          if (isMale && (suggestedNextQuestion === 6 || suggestedNextQuestion === 7)) {
+            setActiveQuestionIndex(8);
+          } else {
+            setActiveQuestionIndex(suggestedNextQuestion);
+          }
         }
       }
     },
-    [activeQuestionIndex, formData.patient_sex]
+    [activeQuestionIndex]
   );
 
   const loadPersona = useCallback((personaId: string) => {
