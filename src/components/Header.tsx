@@ -16,23 +16,20 @@ export function Header() {
 
   return (
     <header className="sticky top-0 z-40 bg-white border-b border-zinc-200">
-      <div className="max-w-2xl mx-auto px-4 py-3 flex items-center justify-between gap-4">
-        {/* Brand */}
-        <div className="flex items-baseline gap-2">
-          <span className="font-mono text-xs font-bold tracking-widest text-zinc-950 uppercase">
-            GenoRoot
-          </span>
-          <span className="text-[11px] font-mono text-zinc-400">
-            Intake
+      <div className="max-w-2xl mx-auto px-4 py-2.5 flex items-center justify-between gap-3 flex-nowrap">
+        {/* Brand: Just clean GENOROOT without secondary labels */}
+        <div className="shrink-0">
+          <span className="font-mono text-xs font-bold tracking-widest text-zinc-950 uppercase select-none">
+            GENOROOT
           </span>
         </div>
 
-        {/* Actions */}
-        <div className="flex items-center gap-2">
+        {/* Actions: Strict single line, no wrapping */}
+        <div className="flex items-center gap-1.5 sm:gap-2 shrink-0 flex-nowrap">
           {/* Upload Rx */}
           <button
             onClick={() => setPrescriptionModalOpen(true)}
-            className="flex items-center gap-1.5 text-xs font-medium px-2.5 py-1.5 border border-zinc-200 hover:border-zinc-950 text-zinc-700 hover:text-zinc-950 transition-colors"
+            className="flex items-center gap-1 text-xs font-mono px-2.5 py-1.5 border border-zinc-200 hover:border-zinc-950 text-zinc-800 transition whitespace-nowrap shrink-0"
           >
             <Camera className="w-3.5 h-3.5" />
             <span className="hidden sm:inline">Upload Rx</span>
@@ -41,9 +38,9 @@ export function Header() {
           {/* Audio toggle */}
           <button
             onClick={() => setIsMuted(!isMuted)}
-            className="p-1.5 border border-zinc-200 hover:border-zinc-950 text-zinc-600 hover:text-zinc-950 transition"
-            title={isMuted ? "Voice is Muted" : "Voice is Active"}
-            aria-label="Toggle Mute"
+            className="p-1.5 border border-zinc-200 hover:border-zinc-950 text-zinc-600 hover:text-zinc-950 transition shrink-0"
+            title={isMuted ? "Audio Muted" : "Audio Active"}
+            aria-label="Toggle Audio"
           >
             {isMuted ? <VolumeX className="w-3.5 h-3.5" /> : <Volume2 className="w-3.5 h-3.5" />}
           </button>
@@ -51,9 +48,9 @@ export function Header() {
           {/* Reset */}
           <button
             onClick={() => {
-              if (confirm("Reset form?")) resetForm();
+              if (confirm("Reset intake form?")) resetForm();
             }}
-            className="p-1.5 border border-zinc-200 hover:border-zinc-950 text-zinc-600 hover:text-zinc-950 transition"
+            className="p-1.5 border border-zinc-200 hover:border-zinc-950 text-zinc-600 hover:text-zinc-950 transition shrink-0"
             title="Reset"
             aria-label="Reset"
           >
@@ -63,9 +60,9 @@ export function Header() {
           {/* Mode Switch */}
           <button
             onClick={() => setViewMode(viewMode === "patient" ? "doctor_summary" : "patient")}
-            className="text-xs font-mono font-semibold px-3 py-1.5 bg-zinc-950 text-white hover:bg-zinc-800 transition"
+            className="text-xs font-mono font-semibold px-2.5 sm:px-3 py-1.5 bg-zinc-950 text-white hover:bg-zinc-800 transition whitespace-nowrap shrink-0"
           >
-            {viewMode === "patient" ? "Doctor Brief →" : "← Patient View"}
+            {viewMode === "patient" ? "Doctor Brief →" : "← Patient"}
           </button>
         </div>
       </div>
