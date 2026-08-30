@@ -1,20 +1,15 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 import { useIntake } from "@/context/IntakeContext";
-import confetti from "canvas-confetti";
 import {
   Code2,
   Copy,
   Download,
-  CheckCircle2,
-  AlertTriangle,
-  ChevronLeft,
-  Sparkles,
-  ShieldCheck,
   Check,
   Activity,
   Edit3,
+  ArrowLeft,
 } from "lucide-react";
 
 export function DoctorSummaryPage() {
@@ -22,22 +17,7 @@ export function DoctorSummaryPage() {
   const [activeTab, setActiveTab] = useState<"clinical" | "json">("clinical");
   const [copied, setCopied] = useState(false);
 
-  // Trigger celebratory confetti on first view if nearly full
-  useEffect(() => {
-    if (answeredCount >= 10) {
-      try {
-        confetti({
-          particleCount: 50,
-          spread: 60,
-          origin: { y: 0.6 },
-        });
-      } catch {
-        // ignore
-      }
-    }
-  }, [answeredCount]);
-
-  // Convert current state to clean, exact machine-readable JSON matching the schema
+  // Exact machine-readable JSON matching the schema
   const structuredDataOutput = {
     form: "GenoRoot Hair & Scalp Intake",
     patient: {
@@ -86,7 +66,7 @@ export function DoctorSummaryPage() {
   const handleCopy = () => {
     navigator.clipboard.writeText(jsonString);
     setCopied(true);
-    setTimeout(() => setCopied(false), 2500);
+    setTimeout(() => setCopied(false), 2000);
   };
 
   const handleDownload = () => {
@@ -99,11 +79,9 @@ export function DoctorSummaryPage() {
     URL.revokeObjectURL(url);
   };
 
-  // Generate Doctor's Diagnostic Impression
+  // Diagnostic Impressions
   const generateDoctorImpression = () => {
     const findings: string[] = [];
-
-    // Family history & pattern
     const hasFam = formData.family_history.some((f) => f.includes("Father") || f.includes("Mother") || f.includes("Siblings"));
     const isMale = formData.patient_sex === "male";
     const hasReceding = formData.pattern.includes("Receding hairline");
@@ -119,93 +97,86 @@ export function DoctorSummaryPage() {
     }
     if (hasFever || hasShedding) {
       findings.push(
-        "Acute Telogen Effluvium triggered by systemic febrile illness (e.g. Dengue / COVID) or acute physiological stress."
+        "Acute Telogen Effluvium secondary to systemic febrile episode or acute stress trigger."
       );
     }
     if (hasPCOS) {
       findings.push(
-        "Endocrine-driven diffuse thinning compounded by Polycystic Ovary Syndrome (PCOS/PCOD) hyperandrogenism."
+        "Hyperandrogenic diffuse loss compounded by Polycystic Ovary Syndrome (PCOS/PCOD)."
       );
     }
-
     if (findings.length === 0) {
-      findings.push("Undifferentiated hair loss; clinical trichoscopy and follicle biopsy recommended.");
+      findings.push("Undifferentiated shedding; clinical dermoscopy and micronutrient profiling indicated.");
     }
-
     return findings;
   };
 
   const impressions = generateDoctorImpression();
 
   return (
-    <div className="max-w-4xl mx-auto px-4 py-6 animate-fade-in">
-      {/* Return to form banner */}
-      <div className="flex items-center justify-between gap-3 mb-6 bg-slate-900 text-white p-4 rounded-2xl shadow-md">
-        <div className="flex items-center gap-3">
-          <div className="w-10 h-10 rounded-xl bg-emerald-500 text-slate-950 flex items-center justify-center font-bold">
-            <CheckCircle2 className="w-6 h-6" />
-          </div>
-          <div>
-            <h2 className="font-bold text-base sm:text-lg leading-tight">
-              Clinical Intake Output (Page 2)
-            </h2>
-            <p className="text-xs text-slate-300">
-              Form fully completed and verified as structured machine-readable data
-            </p>
-          </div>
+    <div className="max-w-3xl mx-auto px-4 py-6">
+      {/* Top Banner */}
+      <div className="flex items-center justify-between border-b border-zinc-200 pb-3 mb-6">
+        <div>
+          <span className="text-[11px] font-mono uppercase tracking-widest text-zinc-400 block">
+            Clinical Output · Page 02
+          </span>
+          <h2 className="text-base font-bold text-zinc-950">
+            Trichology Pre-Consultation Dossier
+          </h2>
         </div>
 
         <button
           onClick={() => setViewMode("patient")}
-          className="flex items-center gap-1.5 text-xs font-semibold px-3 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 transition"
+          className="flex items-center gap-1.5 text-xs font-mono px-3 py-1.5 border border-zinc-200 hover:border-zinc-950 text-zinc-700 hover:text-zinc-950 transition"
         >
-          <ChevronLeft className="w-4 h-4" />
-          <span>Back to Intake</span>
+          <ArrowLeft className="w-3 h-3" />
+          <span>Patient Intake</span>
         </button>
       </div>
 
-      {/* Mode Tabs: Clinical Brief vs Raw JSON */}
-      <div className="flex items-center justify-between gap-2 border-b border-slate-200 mb-6">
-        <div className="flex gap-2">
+      {/* Tabs */}
+      <div className="flex items-center justify-between border-b border-zinc-200 mb-6">
+        <div className="flex gap-4">
           <button
             onClick={() => setActiveTab("clinical")}
-            className={`flex items-center gap-2 px-4 py-2.5 text-sm font-bold border-b-2 transition ${
+            className={`flex items-center gap-1.5 pb-2 text-xs font-mono uppercase tracking-wider border-b-2 transition ${
               activeTab === "clinical"
-                ? "border-emerald-600 text-emerald-700"
-                : "border-transparent text-slate-500 hover:text-slate-800"
+                ? "border-zinc-950 text-zinc-950 font-bold"
+                : "border-transparent text-zinc-400 hover:text-zinc-700"
             }`}
           >
-            <Activity className="w-4 h-4" />
-            <span>Doctor Clinical Brief</span>
+            <Activity className="w-3.5 h-3.5" />
+            <span>Clinical Brief</span>
           </button>
 
           <button
             onClick={() => setActiveTab("json")}
-            className={`flex items-center gap-2 px-4 py-2.5 text-sm font-bold border-b-2 transition ${
+            className={`flex items-center gap-1.5 pb-2 text-xs font-mono uppercase tracking-wider border-b-2 transition ${
               activeTab === "json"
-                ? "border-emerald-600 text-emerald-700"
-                : "border-transparent text-slate-500 hover:text-slate-800"
+                ? "border-zinc-950 text-zinc-950 font-bold"
+                : "border-transparent text-zinc-400 hover:text-zinc-700"
             }`}
           >
-            <Code2 className="w-4 h-4" />
-            <span>Structured JSON (Schema Output)</span>
+            <Code2 className="w-3.5 h-3.5" />
+            <span>Schema JSON</span>
           </button>
         </div>
 
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-2 pb-2">
           <button
             onClick={handleCopy}
-            className="flex items-center gap-1.5 text-xs font-medium px-3 py-1.5 rounded-lg border border-slate-300 hover:bg-slate-100 text-slate-700 transition"
+            className="flex items-center gap-1 text-[11px] font-mono px-2.5 py-1 border border-zinc-200 hover:border-zinc-950 text-zinc-700 transition"
           >
-            {copied ? <Check className="w-3.5 h-3.5 text-emerald-600" /> : <Copy className="w-3.5 h-3.5" />}
-            <span>{copied ? "Copied!" : "Copy JSON"}</span>
+            {copied ? <Check className="w-3 h-3" /> : <Copy className="w-3 h-3" />}
+            <span>{copied ? "Copied" : "Copy"}</span>
           </button>
           <button
             onClick={handleDownload}
-            className="flex items-center gap-1.5 text-xs font-medium px-3 py-1.5 rounded-lg bg-emerald-600 hover:bg-emerald-700 text-white transition shadow-sm"
+            className="flex items-center gap-1 text-[11px] font-mono px-2.5 py-1 bg-zinc-950 text-white hover:bg-zinc-800 transition"
           >
-            <Download className="w-3.5 h-3.5" />
-            <span className="hidden sm:inline">Download</span>
+            <Download className="w-3 h-3" />
+            <span>Export</span>
           </button>
         </div>
       </div>
@@ -213,254 +184,197 @@ export function DoctorSummaryPage() {
       {/* TAB 1: CLINICAL BRIEF */}
       {activeTab === "clinical" && (
         <div className="space-y-6">
-          {/* Patient Card & Vital Stats */}
-          <div className="bg-white rounded-2xl p-5 sm:p-6 border border-slate-200 shadow-sm">
-            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-slate-100 pb-4 mb-4">
-              <div>
-                <h3 className="text-xl font-bold text-slate-900">
-                  {formData.patient_name || "Anonymous Patient"}
-                </h3>
-                <p className="text-xs text-slate-500 mt-0.5">
-                  Sex: <strong className="capitalize">{formData.patient_sex || "Not specified"}</strong> · Age:{" "}
-                  <strong>{formData.patient_age || "N/A"}</strong> · Loss Onset Age:{" "}
-                  <strong>{formData.age_hair_loss_began ? `${formData.age_hair_loss_began} yrs` : "N/A"}</strong> · Duration:{" "}
-                  <strong>{formData.duration || "N/A"}</strong>
-                </p>
-              </div>
-
-              <div className="flex items-center gap-2">
-                <span className="inline-flex items-center gap-1 px-3 py-1 rounded-full bg-emerald-50 text-emerald-800 text-xs font-bold border border-emerald-200">
-                  <ShieldCheck className="w-3.5 h-3.5 text-emerald-600" />
-                  <span>Coverage: {answeredCount}/{totalQuestions} (100% Schema)</span>
-                </span>
+          {/* Patient Overview */}
+          <div className="border border-zinc-200 p-5 bg-white">
+            <div className="flex flex-col sm:flex-row sm:items-baseline justify-between gap-2 border-b border-zinc-100 pb-3 mb-4">
+              <h3 className="text-base font-bold text-zinc-950">
+                {formData.patient_name || "Anonymous Patient"}
+              </h3>
+              <div className="text-xs font-mono text-zinc-500">
+                <span className="uppercase">{formData.patient_sex || "unspecified"}</span> · Age: {formData.patient_age || "—"} · Onset: {formData.age_hair_loss_began || "—"} yrs · Duration: {formData.duration || "—"}
               </div>
             </div>
 
             {/* Diagnostic Impression */}
-            <div className="p-4 rounded-xl bg-emerald-50/70 border border-emerald-200 mb-4">
-              <h4 className="text-xs font-bold uppercase tracking-wider text-emerald-900 mb-1.5 flex items-center gap-1.5">
-                <Sparkles className="w-3.5 h-3.5 text-emerald-700" />
-                <span>Primary Clinical Impression</span>
-              </h4>
-              <ul className="space-y-1 text-sm text-emerald-950">
+            <div className="mb-4 p-3.5 bg-zinc-50 border border-zinc-200">
+              <span className="text-[10px] font-mono uppercase tracking-widest text-zinc-400 block mb-1">
+                Etiology & Diagnostic Assessment
+              </span>
+              <ul className="space-y-1 text-xs text-zinc-800 font-medium">
                 {impressions.map((imp, idx) => (
-                  <li key={idx} className="flex items-start gap-2">
-                    <span className="text-emerald-600 font-bold">•</span>
+                  <li key={idx} className="flex items-start gap-1.5">
+                    <span className="font-mono text-zinc-400">—</span>
                     <span>{imp}</span>
                   </li>
                 ))}
               </ul>
             </div>
 
-            {/* Alerts / Red flags */}
+            {/* Alerts */}
             {(formData.past_treatment_side_effects === "yes" ||
               formData.past_6_months.includes("Fever with illness (COVID, Dengue, Typhoid)") ||
               formData.habits.hard_water === "yes") && (
-              <div className="p-4 rounded-xl bg-amber-50/80 border border-amber-200 mb-4">
-                <h4 className="text-xs font-bold uppercase tracking-wider text-amber-900 mb-1.5 flex items-center gap-1.5">
-                  <AlertTriangle className="w-3.5 h-3.5 text-amber-700" />
-                  <span>Clinical Alerts & Red Flags</span>
-                </h4>
-                <div className="space-y-1 text-xs sm:text-sm text-amber-900">
-                  {formData.past_treatment_side_effects === "yes" && (
-                    <p>
-                      <strong>Past Treatment Adverse Reaction:</strong>{" "}
-                      {formData.past_treatment_side_effects_detail || "Patient reported past adverse reaction."}
-                    </p>
-                  )}
-                  {formData.past_6_months.includes("Fever with illness (COVID, Dengue, Typhoid)") && (
-                    <p>
-                      <strong>Febrile Trigger:</strong> High fever (COVID / Dengue / Typhoid) in the last 6 months. High likelihood of post-febrile Telogen Effluvium.
-                    </p>
-                  )}
-                  {formData.habits.hard_water === "yes" && (
-                    <p>
-                      <strong>Hard Water Exposure:</strong> Mineral crystallization on scalp may inhibit topical absorption.
-                    </p>
-                  )}
-                </div>
+              <div className="mb-4 p-3 border border-zinc-300 text-xs font-mono space-y-1">
+                <span className="text-[10px] uppercase tracking-widest text-zinc-400 block mb-1">
+                  Clinical Alerts
+                </span>
+                {formData.past_treatment_side_effects === "yes" && (
+                  <p>Adverse reaction: {formData.past_treatment_side_effects_detail || "Yes"}</p>
+                )}
+                {formData.past_6_months.includes("Fever with illness (COVID, Dengue, Typhoid)") && (
+                  <p>Febrile illness trigger within 6 months.</p>
+                )}
+                {formData.habits.hard_water === "yes" && (
+                  <p>Hard water washing reported.</p>
+                )}
               </div>
             )}
 
-            {/* Detailed Section Grids */}
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-xs">
-              {/* Section A */}
-              <div className="p-4 rounded-xl border border-slate-200 bg-slate-50 relative">
+            {/* Section Breakdown */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-3 text-xs">
+              <div className="p-3 border border-zinc-200 relative">
                 <button
                   onClick={() => {
                     setActiveQuestionIndex(1);
                     setViewMode("patient");
                   }}
-                  className="absolute top-3 right-3 text-slate-400 hover:text-emerald-600"
+                  className="absolute top-2.5 right-2.5 text-zinc-400 hover:text-zinc-950"
                   title="Edit Section A"
                 >
-                  <Edit3 className="w-3.5 h-3.5" />
+                  <Edit3 className="w-3 h-3" />
                 </button>
-                <h5 className="font-bold text-slate-900 mb-2 uppercase tracking-wider">
-                  A · Hair Loss History
-                </h5>
-                <p className="mb-1">
-                  <strong className="text-slate-600">Pattern:</strong>{" "}
-                  {formData.pattern.length > 0 ? formData.pattern.join(", ") : "None specified"}
+                <span className="font-mono text-[10px] uppercase tracking-widest text-zinc-400 block mb-1">
+                  A · History & Pattern
+                </span>
+                <p className="mb-1 text-zinc-700">
+                  <strong className="font-medium text-zinc-900">Pattern:</strong> {formData.pattern.join(", ") || "None"}
                 </p>
-                <p>
-                  <strong className="text-slate-600">Family History:</strong>{" "}
-                  {formData.family_history.length > 0 ? formData.family_history.join(", ") : "None specified"}
+                <p className="text-zinc-700">
+                  <strong className="font-medium text-zinc-900">Family:</strong> {formData.family_history.join(", ") || "None"}
                 </p>
               </div>
 
-              {/* Section B */}
-              <div className="p-4 rounded-xl border border-slate-200 bg-slate-50 relative">
+              <div className="p-3 border border-zinc-200 relative">
                 <button
                   onClick={() => {
                     setActiveQuestionIndex(5);
                     setViewMode("patient");
                   }}
-                  className="absolute top-3 right-3 text-slate-400 hover:text-emerald-600"
+                  className="absolute top-2.5 right-2.5 text-zinc-400 hover:text-zinc-950"
                   title="Edit Section B"
                 >
-                  <Edit3 className="w-3.5 h-3.5" />
+                  <Edit3 className="w-3 h-3" />
                 </button>
-                <h5 className="font-bold text-slate-900 mb-2 uppercase tracking-wider">
-                  B · Hormonal Influences
-                </h5>
-                <p className="mb-1">
-                  <strong className="text-slate-600">Diagnosed:</strong>{" "}
-                  {formData.diagnosed_conditions.length > 0 ? formData.diagnosed_conditions.join(", ") : "None"}
+                <span className="font-mono text-[10px] uppercase tracking-widest text-zinc-400 block mb-1">
+                  B · Hormonal Factors
+                </span>
+                <p className="mb-1 text-zinc-700">
+                  <strong className="font-medium text-zinc-900">Conditions:</strong> {formData.diagnosed_conditions.join(", ") || "None"}
                 </p>
                 {formData.patient_sex !== "male" && (
-                  <>
-                    <p className="mb-1">
-                      <strong className="text-slate-600">Menstrual:</strong> {formData.menstrual_cycle || "N/A"}
-                    </p>
-                    <p className="mb-1">
-                      <strong className="text-slate-600">Pregnancy:</strong> {formData.pregnancy_related || "N/A"}
-                    </p>
-                  </>
+                  <p className="mb-1 text-zinc-700">
+                    <strong className="font-medium text-zinc-900">Cycle:</strong> {formData.menstrual_cycle || "N/A"} · {formData.pregnancy_related || "N/A"}
+                  </p>
                 )}
-                <p>
-                  <strong className="text-slate-600">Adult Acne:</strong> {String(formData.adult_acne_oily_skin)} ·{" "}
-                  <strong className="text-slate-600">Excess Hair:</strong> {String(formData.excess_body_facial_hair)}
+                <p className="text-zinc-700">
+                  <strong className="font-medium text-zinc-900">Acne / Facial hair:</strong> {String(formData.adult_acne_oily_skin)} / {String(formData.excess_body_facial_hair)}
                 </p>
               </div>
 
-              {/* Section C */}
-              <div className="p-4 rounded-xl border border-slate-200 bg-slate-50 relative">
+              <div className="p-3 border border-zinc-200 relative">
                 <button
                   onClick={() => {
                     setActiveQuestionIndex(10);
                     setViewMode("patient");
                   }}
-                  className="absolute top-3 right-3 text-slate-400 hover:text-emerald-600"
+                  className="absolute top-2.5 right-2.5 text-zinc-400 hover:text-zinc-950"
                   title="Edit Section C"
                 >
-                  <Edit3 className="w-3.5 h-3.5" />
+                  <Edit3 className="w-3 h-3" />
                 </button>
-                <h5 className="font-bold text-slate-900 mb-2 uppercase tracking-wider">
+                <span className="font-mono text-[10px] uppercase tracking-widest text-zinc-400 block mb-1">
                   C · Triggers & Habits
-                </h5>
-                <p className="mb-1">
-                  <strong className="text-slate-600">Triggers (6mo):</strong>{" "}
-                  {formData.past_6_months.length > 0 ? formData.past_6_months.join(", ") : "None"}
+                </span>
+                <p className="mb-1 text-zinc-700">
+                  <strong className="font-medium text-zinc-900">Triggers:</strong> {formData.past_6_months.join(", ") || "None"}
                 </p>
-                <p>
-                  <strong className="text-slate-600">Wash Frequency:</strong> {formData.habits.hair_wash_frequency || "N/A"} ·{" "}
-                  <strong className="text-slate-600">Smoking:</strong> {formData.habits.smoking === "yes" ? formData.habits.smoking_severity || "Yes" : "No"}
+                <p className="text-zinc-700">
+                  <strong className="font-medium text-zinc-900">Wash / Smoking:</strong> {formData.habits.hair_wash_frequency || "—"} / {formData.habits.smoking === "yes" ? formData.habits.smoking_severity || "Yes" : "No"}
                 </p>
               </div>
 
-              {/* Section E */}
-              <div className="p-4 rounded-xl border border-slate-200 bg-slate-50 relative">
+              <div className="p-3 border border-zinc-200 relative">
                 <button
                   onClick={() => {
                     setActiveQuestionIndex(15);
                     setViewMode("patient");
                   }}
-                  className="absolute top-3 right-3 text-slate-400 hover:text-emerald-600"
+                  className="absolute top-2.5 right-2.5 text-zinc-400 hover:text-zinc-950"
                   title="Edit Section E"
                 >
-                  <Edit3 className="w-3.5 h-3.5" />
+                  <Edit3 className="w-3 h-3" />
                 </button>
-                <h5 className="font-bold text-slate-900 mb-2 uppercase tracking-wider">
+                <span className="font-mono text-[10px] uppercase tracking-widest text-zinc-400 block mb-1">
                   E · Sample & Consent
-                </h5>
-                <p className="mb-1">
-                  <strong className="text-slate-600">Preferred Sample:</strong> {formData.sample_type || "N/A"}
+                </span>
+                <p className="mb-1 text-zinc-700">
+                  <strong className="font-medium text-zinc-900">Sample:</strong> {formData.sample_type || "—"}
                 </p>
-                <p>
-                  <strong className="text-slate-600">DNA Consent:</strong>{" "}
-                  {formData.consent === "yes" ? "Granted ✓" : "Not Provided"}
+                <p className="text-zinc-700">
+                  <strong className="font-medium text-zinc-900">Consent:</strong> {formData.consent === "yes" ? "Granted" : "Declined"}
                 </p>
               </div>
             </div>
 
-            {/* Section D: Product Matrix Table */}
-            <div className="mt-4 p-4 rounded-xl border border-slate-200 bg-slate-50">
-              <h5 className="font-bold text-slate-900 mb-2 uppercase tracking-wider text-xs">
-                D · Treatments & Procedures Log
-              </h5>
-              <div className="overflow-x-auto">
-                <table className="w-full text-xs text-left border-collapse">
-                  <thead>
-                    <tr className="border-b border-slate-200 text-slate-500 font-semibold">
-                      <th className="py-2">Item</th>
-                      <th className="py-2">Status</th>
-                      <th className="py-2">Duration / Sessions</th>
-                      <th className="py-2">Helped?</th>
-                      <th className="py-2">Side Effects?</th>
+            {/* Treatments Matrix */}
+            <div className="mt-4 pt-3 border-t border-zinc-100">
+              <span className="text-[10px] font-mono uppercase tracking-widest text-zinc-400 block mb-2">
+                D · Treatment History Table
+              </span>
+              <table className="w-full text-xs text-left border-collapse border border-zinc-200">
+                <thead>
+                  <tr className="bg-zinc-50 border-b border-zinc-200 font-mono text-[11px] text-zinc-500">
+                    <th className="p-2 border-r border-zinc-200">Item</th>
+                    <th className="p-2 border-r border-zinc-200">Used</th>
+                    <th className="p-2 border-r border-zinc-200">Duration / Sessions</th>
+                    <th className="p-2 border-r border-zinc-200">Helped</th>
+                    <th className="p-2">Side Effect</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-zinc-200 font-mono text-[11px]">
+                  {Object.entries(formData.products).map(([name, u]) => (
+                    <tr key={name}>
+                      <td className="p-2 font-sans font-medium text-zinc-900 border-r border-zinc-200">{name}</td>
+                      <td className="p-2 border-r border-zinc-200">{u.used ? "Yes" : "No"}</td>
+                      <td className="p-2 border-r border-zinc-200">{u.duration || "—"}</td>
+                      <td className="p-2 border-r border-zinc-200">{u.helped || "—"}</td>
+                      <td className="p-2">{u.side_effects || "—"}</td>
                     </tr>
-                  </thead>
-                  <tbody className="divide-y divide-slate-200/60">
-                    {Object.entries(formData.products).map(([name, u]) => (
-                      <tr key={name} className="hover:bg-slate-100/50">
-                        <td className="py-2 font-medium text-slate-900">{name}</td>
-                        <td className="py-2">
-                          <span
-                            className={`px-2 py-0.5 rounded text-[10px] font-bold ${
-                              u.used ? "bg-emerald-100 text-emerald-800" : "bg-slate-200 text-slate-600"
-                            }`}
-                          >
-                            {u.used ? "Used" : "No"}
-                          </span>
-                        </td>
-                        <td className="py-2">{u.duration || "—"}</td>
-                        <td className="py-2 capitalize">{u.helped || "—"}</td>
-                        <td className="py-2 capitalize">{u.side_effects || "—"}</td>
-                      </tr>
-                    ))}
-                    {Object.entries(formData.procedures).map(([name, u]) => (
-                      <tr key={name} className="hover:bg-slate-100/50">
-                        <td className="py-2 font-medium text-slate-900">{name}</td>
-                        <td className="py-2">
-                          <span
-                            className={`px-2 py-0.5 rounded text-[10px] font-bold ${
-                              u.done ? "bg-emerald-100 text-emerald-800" : "bg-slate-200 text-slate-600"
-                            }`}
-                          >
-                            {u.done ? "Done" : "No"}
-                          </span>
-                        </td>
-                        <td className="py-2">{u.sessions ? `${u.sessions} sessions` : "—"}</td>
-                        <td className="py-2 capitalize">{u.helped || "—"}</td>
-                        <td className="py-2">—</td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
+                  ))}
+                  {Object.entries(formData.procedures).map(([name, u]) => (
+                    <tr key={name}>
+                      <td className="p-2 font-sans font-medium text-zinc-900 border-r border-zinc-200">{name}</td>
+                      <td className="p-2 border-r border-zinc-200">{u.done ? "Yes" : "No"}</td>
+                      <td className="p-2 border-r border-zinc-200">{u.sessions || "—"}</td>
+                      <td className="p-2 border-r border-zinc-200">{u.helped || "—"}</td>
+                      <td className="p-2">—</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
             </div>
           </div>
         </div>
       )}
 
-      {/* TAB 2: STRUCTURED RAW JSON (SCHEMA MATCH) */}
+      {/* TAB 2: STRUCTURED RAW JSON */}
       {activeTab === "json" && (
-        <div className="bg-slate-950 text-slate-100 rounded-2xl p-5 border border-slate-800 shadow-xl overflow-hidden">
-          <div className="flex items-center justify-between border-b border-slate-800 pb-3 mb-3 text-xs text-slate-400">
-            <span>Schema: GenoRoot Hair & Scalp Intake (16 Questions)</span>
-            <span className="text-emerald-400 font-mono">100% Machine-Readable</span>
+        <div className="border border-zinc-200 bg-zinc-950 p-4">
+          <div className="flex items-center justify-between text-[11px] font-mono text-zinc-400 border-b border-zinc-800 pb-2 mb-3">
+            <span>intake-schema.json compliant</span>
+            <span>16 / 16 coverage</span>
           </div>
-          <pre className="text-xs sm:text-sm font-mono overflow-x-auto p-2 leading-relaxed text-emerald-300 max-h-[600px] overflow-y-auto">
+          <pre className="text-xs font-mono text-zinc-200 overflow-x-auto max-h-[550px] leading-relaxed">
             {jsonString}
           </pre>
         </div>

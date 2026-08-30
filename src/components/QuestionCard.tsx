@@ -19,14 +19,7 @@ import {
   ProductUsage,
   ProcedureUsage,
 } from "@/types/intake";
-import {
-  ChevronRight,
-  ChevronLeft,
-  Check,
-  Sparkles,
-  Info,
-  Calendar,
-} from "lucide-react";
+import { Check, ArrowRight, ArrowLeft } from "lucide-react";
 
 export function QuestionCard() {
   const {
@@ -45,47 +38,45 @@ export function QuestionCard() {
   // Intro / Demographics Screen (Index 0)
   if (activeQuestionIndex === 0) {
     return (
-      <div className="bg-white rounded-2xl p-5 sm:p-8 shadow-sm border border-slate-200">
-        <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-emerald-50 text-emerald-800 text-xs font-semibold mb-4 border border-emerald-200">
-          <Sparkles className="w-3.5 h-3.5" />
-          <span>Patient Concierge</span>
+      <div className="bg-white border border-zinc-200 p-6 sm:p-8 max-w-xl mx-auto">
+        <div className="text-[11px] font-mono uppercase tracking-widest text-zinc-400 mb-2">
+          Clinical Intake · Step 00
         </div>
 
-        <h2 className="text-2xl sm:text-3xl font-bold text-slate-900 mb-2">
-          Welcome to GenoRoot Clinic
-        </h2>
-        <p className="text-slate-600 text-sm sm:text-base mb-6 leading-relaxed">
-          Before your doctor consultation, we will build your complete hair & scalp clinical picture.
-          You can simply tap the voice mic to speak, or tap the options below.
+        <h1 className="text-xl sm:text-2xl font-bold tracking-tight text-zinc-950 mb-2">
+          Patient Intake Assessment
+        </h1>
+        <p className="text-xs sm:text-sm text-zinc-500 mb-6 leading-relaxed">
+          Fill your hair & scalp clinical background. You can speak naturally via the microphone above or tap the options below.
         </p>
 
-        <div className="space-y-4 max-w-md">
+        <div className="space-y-4">
           <div>
-            <label className="block text-xs font-semibold text-slate-700 uppercase tracking-wider mb-1.5">
-              Full Name (or Preferred Name)
+            <label className="block text-xs font-mono text-zinc-600 uppercase tracking-wider mb-1">
+              Patient Name
             </label>
             <input
               type="text"
               value={formData.patient_name || ""}
               onChange={(e) => updateField("patient_name", e.target.value)}
-              placeholder="e.g., Ramesh Sharma"
-              className="w-full text-base px-3.5 py-2.5 rounded-xl border border-slate-300 focus:outline-none focus:ring-2 focus:ring-emerald-500 font-medium text-slate-800"
+              placeholder="Full name"
+              className="w-full text-sm px-3 py-2 border border-zinc-300 focus:outline-none focus:border-zinc-950 font-medium text-zinc-900 placeholder-zinc-400"
             />
           </div>
 
           <div className="grid grid-cols-2 gap-3">
             <div>
-              <label className="block text-xs font-semibold text-slate-700 uppercase tracking-wider mb-1.5">
-                Biological Sex
+              <label className="block text-xs font-mono text-zinc-600 uppercase tracking-wider mb-1">
+                Sex
               </label>
-              <div className="grid grid-cols-2 gap-2">
+              <div className="grid grid-cols-2 gap-1.5">
                 <button
                   type="button"
                   onClick={() => updateField("patient_sex", "male")}
-                  className={`py-2.5 px-3 rounded-xl border text-sm font-semibold transition ${
+                  className={`py-2 px-3 border text-xs font-semibold transition ${
                     formData.patient_sex === "male"
-                      ? "bg-emerald-600 border-emerald-600 text-white shadow-sm"
-                      : "bg-slate-50 border-slate-200 text-slate-700 hover:bg-slate-100"
+                      ? "bg-zinc-950 border-zinc-950 text-white"
+                      : "bg-white border-zinc-200 text-zinc-700 hover:border-zinc-400"
                   }`}
                 >
                   Male
@@ -93,10 +84,10 @@ export function QuestionCard() {
                 <button
                   type="button"
                   onClick={() => updateField("patient_sex", "female")}
-                  className={`py-2.5 px-3 rounded-xl border text-sm font-semibold transition ${
+                  className={`py-2 px-3 border text-xs font-semibold transition ${
                     formData.patient_sex === "female"
-                      ? "bg-emerald-600 border-emerald-600 text-white shadow-sm"
-                      : "bg-slate-50 border-slate-200 text-slate-700 hover:bg-slate-100"
+                      ? "bg-zinc-950 border-zinc-950 text-white"
+                      : "bg-white border-zinc-200 text-zinc-700 hover:border-zinc-400"
                   }`}
                 >
                   Female
@@ -105,8 +96,8 @@ export function QuestionCard() {
             </div>
 
             <div>
-              <label className="block text-xs font-semibold text-slate-700 uppercase tracking-wider mb-1.5">
-                Current Age
+              <label className="block text-xs font-mono text-zinc-600 uppercase tracking-wider mb-1">
+                Age
               </label>
               <input
                 type="number"
@@ -117,29 +108,26 @@ export function QuestionCard() {
                     e.target.value ? parseInt(e.target.value, 10) : null
                   )
                 }
-                placeholder="e.g., 45"
+                placeholder="Age"
                 min={10}
                 max={99}
-                className="w-full text-base px-3.5 py-2.5 rounded-xl border border-slate-300 focus:outline-none focus:ring-2 focus:ring-emerald-500 font-medium text-slate-800"
+                className="w-full text-sm px-3 py-2 border border-zinc-300 focus:outline-none focus:border-zinc-950 font-medium text-zinc-900 placeholder-zinc-400"
               />
             </div>
           </div>
 
           {formData.patient_sex === "male" && (
-            <p className="text-xs text-slate-500 bg-slate-50 p-2.5 rounded-lg border border-slate-200 flex items-center gap-1.5">
-              <Info className="w-4 h-4 text-emerald-600 shrink-0" />
-              <span>
-                Female-specific hormonal questions (menstrual & pregnancy) will be automatically bypassed.
-              </span>
+            <p className="text-[11px] font-mono text-zinc-500 bg-zinc-50 p-2 border border-zinc-200">
+              Note: Female hormonal questions (menstrual / pregnancy) will be automatically bypassed.
             </p>
           )}
 
           <button
             onClick={() => setActiveQuestionIndex(1)}
-            className="w-full mt-4 py-3 px-5 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-semibold text-base transition flex items-center justify-center gap-2 shadow-md"
+            className="w-full mt-4 py-2.5 px-4 bg-zinc-950 hover:bg-zinc-800 text-white font-medium text-xs tracking-wider uppercase transition flex items-center justify-center gap-2"
           >
-            <span>Start Hair Assessment</span>
-            <ChevronRight className="w-5 h-5" />
+            <span>Begin Intake</span>
+            <ArrowRight className="w-3.5 h-3.5" />
           </button>
         </div>
       </div>
@@ -149,56 +137,54 @@ export function QuestionCard() {
   const meta = QUESTIONS_METADATA.find((q) => q.n === activeQuestionIndex);
   if (!meta) return null;
 
+  const formattedNum = String(meta.n).padStart(2, "0");
+
   return (
-    <div className="bg-white rounded-2xl p-5 sm:p-8 shadow-sm border border-slate-200">
-      {/* Section Header */}
-      <div className="flex items-center justify-between gap-2 mb-3">
-        <span className="text-xs font-bold uppercase tracking-wider text-emerald-700 bg-emerald-50 border border-emerald-200 px-2.5 py-1 rounded-full">
-          Section {meta.sectionId} · Question {meta.n} of 16
-        </span>
-        <span className="text-xs text-slate-400 font-medium">
-          {meta.sectionTitle}
-        </span>
+    <div className="bg-white border border-zinc-200 p-6 sm:p-8 max-w-2xl mx-auto">
+      {/* Header Info */}
+      <div className="flex items-center justify-between text-xs font-mono text-zinc-400 mb-3 border-b border-zinc-100 pb-2">
+        <span>Section {meta.sectionId} · {meta.sectionTitle}</span>
+        <span className="font-semibold text-zinc-950">{formattedNum} / 16</span>
       </div>
 
-      <h2 className="text-xl sm:text-2xl font-bold text-slate-900 mb-2 leading-snug">
+      <h2 className="text-lg sm:text-xl font-bold text-zinc-950 mb-1.5">
         {meta.title}
       </h2>
-      <p className="text-slate-600 text-xs sm:text-sm mb-6">
+      <p className="text-xs text-zinc-500 mb-6">
         {meta.description}
       </p>
 
-      {/* Render Question Content */}
+      {/* Question Options dispatcher */}
       <div className="mb-8">
         {renderQuestionContent(meta.n, formData, updateField, updateHabit, updateProduct, updateProcedure)}
       </div>
 
       {/* Navigation Footer */}
-      <div className="flex items-center justify-between pt-5 border-t border-slate-100 gap-3">
+      <div className="flex items-center justify-between pt-4 border-t border-zinc-100">
         <button
           onClick={prevStep}
-          className="flex items-center gap-1.5 px-4 py-2.5 rounded-xl border border-slate-300 hover:bg-slate-50 text-slate-700 text-sm font-semibold transition"
+          className="flex items-center gap-1 text-xs font-mono text-zinc-500 hover:text-zinc-950 px-2 py-1.5 transition"
         >
-          <ChevronLeft className="w-4 h-4" />
-          <span>Back</span>
+          <ArrowLeft className="w-3.5 h-3.5" />
+          <span>Previous</span>
         </button>
 
-        <div className="flex items-center gap-2">
+        <div>
           {activeQuestionIndex < 16 ? (
             <button
               onClick={nextStep}
-              className="flex items-center gap-1.5 px-5 py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white text-sm font-semibold transition shadow-sm"
+              className="flex items-center gap-1.5 text-xs font-semibold px-4 py-2 bg-zinc-950 hover:bg-zinc-800 text-white transition"
             >
               <span>Next</span>
-              <ChevronRight className="w-4 h-4" />
+              <ArrowRight className="w-3.5 h-3.5" />
             </button>
           ) : (
             <button
               onClick={() => setViewMode("doctor_summary")}
-              className="flex items-center gap-1.5 px-6 py-2.5 rounded-xl bg-slate-900 hover:bg-slate-800 text-white text-sm font-bold transition shadow-md"
+              className="flex items-center gap-1.5 text-xs font-semibold px-4 py-2 bg-zinc-950 hover:bg-zinc-800 text-white transition"
             >
-              <span>Complete & View Doctor Brief</span>
-              <ChevronRight className="w-4 h-4" />
+              <span>View Doctor Summary</span>
+              <ArrowRight className="w-3.5 h-3.5" />
             </button>
           )}
         </div>
@@ -207,7 +193,7 @@ export function QuestionCard() {
   );
 }
 
-// Question body dispatcher
+// Question body dispatcher with pure monochrome UI
 function renderQuestionContent(
   n: number,
   formData: IntakeFormData,
@@ -224,8 +210,8 @@ function renderQuestionContent(
       return (
         <div className="space-y-4">
           <div className="max-w-xs">
-            <label className="block text-xs font-semibold text-slate-600 mb-1">
-              Enter exact age:
+            <label className="block text-xs font-mono text-zinc-500 mb-1">
+              Enter age:
             </label>
             <input
               type="number"
@@ -236,28 +222,28 @@ function renderQuestionContent(
                   e.target.value ? parseInt(e.target.value, 10) : null
                 )
               }
-              placeholder="e.g. 26"
+              placeholder="e.g. 28"
               min={10}
               max={99}
-              className="w-full text-xl font-bold p-3 rounded-xl border border-slate-300 focus:outline-none focus:ring-2 focus:ring-emerald-500 text-slate-800"
+              className="w-full text-base font-mono p-2.5 border border-zinc-300 focus:outline-none focus:border-zinc-950 text-zinc-900"
             />
           </div>
           <div>
-            <span className="text-xs text-slate-500 block mb-2 font-medium">
-              Or tap a common onset age:
+            <span className="text-[11px] font-mono text-zinc-400 block mb-2">
+              Common presets:
             </span>
-            <div className="flex flex-wrap gap-2">
+            <div className="flex flex-wrap gap-1.5">
               {presets.map((p) => (
                 <button
                   key={p}
                   onClick={() => updateField("age_hair_loss_began", p)}
-                  className={`px-3.5 py-2 rounded-xl text-sm font-semibold border transition ${
+                  className={`px-3 py-1.5 text-xs font-mono border transition ${
                     age === p
-                      ? "bg-emerald-600 border-emerald-600 text-white shadow-sm"
-                      : "bg-slate-50 border-slate-200 text-slate-700 hover:bg-slate-100"
+                      ? "bg-zinc-950 border-zinc-950 text-white"
+                      : "bg-white border-zinc-200 text-zinc-700 hover:border-zinc-400"
                   }`}
                 >
-                  Age {p}
+                  {p} yrs
                 </button>
               ))}
             </div>
@@ -274,24 +260,21 @@ function renderQuestionContent(
         "Over a year",
       ];
       return (
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
           {options.map((opt) => {
             const selected = formData.duration === opt;
             return (
               <button
                 key={opt}
                 onClick={() => updateField("duration", opt)}
-                className={`p-4 rounded-xl border text-left transition flex flex-col justify-between min-h-[90px] ${
+                className={`p-3.5 border text-left transition flex items-center justify-between ${
                   selected
-                    ? "bg-emerald-50 border-emerald-500 ring-2 ring-emerald-500 text-emerald-950"
-                    : "bg-slate-50 border-slate-200 text-slate-800 hover:bg-slate-100"
+                    ? "bg-zinc-950 border-zinc-950 text-white"
+                    : "bg-white border-zinc-200 text-zinc-800 hover:border-zinc-400"
                 }`}
               >
-                <div className="flex items-center justify-between w-full mb-2">
-                  <Calendar className={`w-5 h-5 ${selected ? "text-emerald-600" : "text-slate-400"}`} />
-                  {selected && <Check className="w-5 h-5 text-emerald-600" />}
-                </div>
-                <span className="font-bold text-sm sm:text-base">{opt}</span>
+                <span className="text-xs font-medium">{opt}</span>
+                {selected && <Check className="w-3.5 h-3.5 text-white" />}
               </button>
             );
           })}
@@ -324,29 +307,21 @@ function renderQuestionContent(
       };
 
       return (
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
           {options.map((opt) => {
             const selected = selectedList.includes(opt);
             return (
               <button
                 key={opt}
                 onClick={() => toggle(opt)}
-                className={`p-4 rounded-xl border text-left transition flex items-center justify-between ${
+                className={`p-3.5 border text-left transition flex items-center justify-between ${
                   selected
-                    ? "bg-emerald-50 border-emerald-500 ring-2 ring-emerald-500 text-emerald-950"
-                    : "bg-slate-50 border-slate-200 text-slate-800 hover:bg-slate-100"
+                    ? "bg-zinc-950 border-zinc-950 text-white"
+                    : "bg-white border-zinc-200 text-zinc-800 hover:border-zinc-400"
                 }`}
               >
-                <span className="font-medium text-sm sm:text-base">{opt}</span>
-                <div
-                  className={`w-6 h-6 rounded-lg flex items-center justify-center border transition ${
-                    selected
-                      ? "bg-emerald-600 border-emerald-600 text-white"
-                      : "border-slate-300 bg-white"
-                  }`}
-                >
-                  {selected && <Check className="w-4 h-4" />}
-                </div>
+                <span className="text-xs font-medium">{opt}</span>
+                {selected && <Check className="w-3.5 h-3.5 text-white" />}
               </button>
             );
           })}
@@ -377,39 +352,21 @@ function renderQuestionContent(
       };
 
       return (
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
           {options.map((opt) => {
             const selected = selectedList.includes(opt);
             return (
               <button
                 key={opt}
                 onClick={() => toggle(opt)}
-                className={`p-4 rounded-xl border text-left transition flex items-center justify-between ${
+                className={`p-3.5 border text-left transition flex items-center justify-between ${
                   selected
-                    ? "bg-emerald-50 border-emerald-500 ring-2 ring-emerald-500 text-emerald-950"
-                    : "bg-slate-50 border-slate-200 text-slate-800 hover:bg-slate-100"
+                    ? "bg-zinc-950 border-zinc-950 text-white"
+                    : "bg-white border-zinc-200 text-zinc-800 hover:border-zinc-400"
                 }`}
               >
-                <div>
-                  <span className="font-semibold text-sm sm:text-base block">{opt}</span>
-                  <span className="text-xs text-slate-500">
-                    {opt === "Receding hairline" && "Frontal forehead temples"}
-                    {opt === "Thinning at crown" && "Vertex top of head"}
-                    {opt === "Widening part line" && "Middle partition line"}
-                    {opt === "Diffuse thinning" && "Overall loss across scalp"}
-                    {opt === "Patchy loss" && "Distinct circular patches"}
-                    {opt === "Sudden excessive shedding" && "Clumps in shower/comb"}
-                  </span>
-                </div>
-                <div
-                  className={`w-6 h-6 rounded-lg flex items-center justify-center border shrink-0 transition ${
-                    selected
-                      ? "bg-emerald-600 border-emerald-600 text-white"
-                      : "border-slate-300 bg-white"
-                  }`}
-                >
-                  {selected && <Check className="w-4 h-4" />}
-                </div>
+                <span className="text-xs font-medium">{opt}</span>
+                {selected && <Check className="w-3.5 h-3.5 text-white" />}
               </button>
             );
           })}
@@ -447,36 +404,21 @@ function renderQuestionContent(
       };
 
       return (
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
           {options.map((opt) => {
             const selected = selectedList.includes(opt);
             return (
               <button
                 key={opt}
                 onClick={() => toggle(opt)}
-                className={`p-4 rounded-xl border text-left transition flex items-center justify-between ${
+                className={`p-3.5 border text-left transition flex items-center justify-between ${
                   selected
-                    ? "bg-emerald-50 border-emerald-500 ring-2 ring-emerald-500 text-emerald-950"
-                    : "bg-slate-50 border-slate-200 text-slate-800 hover:bg-slate-100"
+                    ? "bg-zinc-950 border-zinc-950 text-white"
+                    : "bg-white border-zinc-200 text-zinc-800 hover:border-zinc-400"
                 }`}
               >
-                <div>
-                  <span className="font-semibold text-sm sm:text-base block">{opt}</span>
-                  <span className="text-xs text-slate-500">
-                    {opt === "PCOS/PCOD" && "Polycystic ovary syndrome"}
-                    {opt === "Thyroid disorder" && "Hypo / Hyperthyroidism"}
-                    {opt === "Anemia" && "Low iron / ferritin"}
-                  </span>
-                </div>
-                <div
-                  className={`w-6 h-6 rounded-lg flex items-center justify-center border shrink-0 transition ${
-                    selected
-                      ? "bg-emerald-600 border-emerald-600 text-white"
-                      : "border-slate-300 bg-white"
-                  }`}
-                >
-                  {selected && <Check className="w-4 h-4" />}
-                </div>
+                <span className="text-xs font-medium">{opt}</span>
+                {selected && <Check className="w-3.5 h-3.5 text-white" />}
               </button>
             );
           })}
@@ -484,7 +426,7 @@ function renderQuestionContent(
       );
     }
 
-    // Q6: Menstrual cycle (female only)
+    // Q6: Menstrual cycle
     case 6: {
       const options: MenstrualCycleOption[] = [
         "Regular",
@@ -493,21 +435,21 @@ function renderQuestionContent(
         "Not applicable",
       ];
       return (
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
           {options.map((opt) => {
             const selected = formData.menstrual_cycle === opt;
             return (
               <button
                 key={opt}
                 onClick={() => updateField("menstrual_cycle", opt)}
-                className={`p-4 rounded-xl border text-left transition flex items-center justify-between ${
+                className={`p-3.5 border text-left transition flex items-center justify-between ${
                   selected
-                    ? "bg-emerald-50 border-emerald-500 ring-2 ring-emerald-500 text-emerald-950"
-                    : "bg-slate-50 border-slate-200 text-slate-800 hover:bg-slate-100"
+                    ? "bg-zinc-950 border-zinc-950 text-white"
+                    : "bg-white border-zinc-200 text-zinc-800 hover:border-zinc-400"
                 }`}
               >
-                <span className="font-semibold text-sm sm:text-base">{opt}</span>
-                {selected && <Check className="w-5 h-5 text-emerald-600" />}
+                <span className="text-xs font-medium">{opt}</span>
+                {selected && <Check className="w-3.5 h-3.5 text-white" />}
               </button>
             );
           })}
@@ -515,7 +457,7 @@ function renderQuestionContent(
       );
     }
 
-    // Q7: Pregnancy-related (female only)
+    // Q7: Pregnancy-related
     case 7: {
       const options: PregnancyRelatedOption[] = [
         "Currently pregnant",
@@ -523,21 +465,21 @@ function renderQuestionContent(
         "Not applicable",
       ];
       return (
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
           {options.map((opt) => {
             const selected = formData.pregnancy_related === opt;
             return (
               <button
                 key={opt}
                 onClick={() => updateField("pregnancy_related", opt)}
-                className={`p-4 rounded-xl border text-left transition flex flex-col justify-between min-h-[90px] ${
+                className={`p-3.5 border text-left transition flex items-center justify-between ${
                   selected
-                    ? "bg-emerald-50 border-emerald-500 ring-2 ring-emerald-500 text-emerald-950"
-                    : "bg-slate-50 border-slate-200 text-slate-800 hover:bg-slate-100"
+                    ? "bg-zinc-950 border-zinc-950 text-white"
+                    : "bg-white border-zinc-200 text-zinc-800 hover:border-zinc-400"
                 }`}
               >
-                <span className="font-semibold text-sm sm:text-base">{opt}</span>
-                {selected && <Check className="w-5 h-5 text-emerald-600 self-end" />}
+                <span className="text-xs font-medium">{opt}</span>
+                {selected && <Check className="w-3.5 h-3.5 text-white" />}
               </button>
             );
           })}
@@ -545,27 +487,27 @@ function renderQuestionContent(
       );
     }
 
-    // Q8: Adult acne / oily skin
+    // Q8: Adult acne
     case 8: {
       const val = formData.adult_acne_oily_skin;
       return (
-        <div className="grid grid-cols-2 gap-4 max-w-sm">
+        <div className="grid grid-cols-2 gap-3 max-w-xs">
           <button
             onClick={() => updateField("adult_acne_oily_skin", "yes")}
-            className={`py-4 px-6 rounded-xl border text-center font-bold text-base transition ${
+            className={`py-3 px-4 border text-center text-xs font-semibold transition ${
               val === "yes" || val === true
-                ? "bg-emerald-600 border-emerald-600 text-white shadow-md"
-                : "bg-slate-50 border-slate-200 text-slate-800 hover:bg-slate-100"
+                ? "bg-zinc-950 border-zinc-950 text-white"
+                : "bg-white border-zinc-200 text-zinc-800 hover:border-zinc-400"
             }`}
           >
             Yes
           </button>
           <button
             onClick={() => updateField("adult_acne_oily_skin", "no")}
-            className={`py-4 px-6 rounded-xl border text-center font-bold text-base transition ${
+            className={`py-3 px-4 border text-center text-xs font-semibold transition ${
               val === "no" || val === false
-                ? "bg-emerald-600 border-emerald-600 text-white shadow-md"
-                : "bg-slate-50 border-slate-200 text-slate-800 hover:bg-slate-100"
+                ? "bg-zinc-950 border-zinc-950 text-white"
+                : "bg-white border-zinc-200 text-zinc-800 hover:border-zinc-400"
             }`}
           >
             No
@@ -578,23 +520,23 @@ function renderQuestionContent(
     case 9: {
       const val = formData.excess_body_facial_hair;
       return (
-        <div className="grid grid-cols-2 gap-4 max-w-sm">
+        <div className="grid grid-cols-2 gap-3 max-w-xs">
           <button
             onClick={() => updateField("excess_body_facial_hair", "yes")}
-            className={`py-4 px-6 rounded-xl border text-center font-bold text-base transition ${
+            className={`py-3 px-4 border text-center text-xs font-semibold transition ${
               val === "yes" || val === true
-                ? "bg-emerald-600 border-emerald-600 text-white shadow-md"
-                : "bg-slate-50 border-slate-200 text-slate-800 hover:bg-slate-100"
+                ? "bg-zinc-950 border-zinc-950 text-white"
+                : "bg-white border-zinc-200 text-zinc-800 hover:border-zinc-400"
             }`}
           >
             Yes
           </button>
           <button
             onClick={() => updateField("excess_body_facial_hair", "no")}
-            className={`py-4 px-6 rounded-xl border text-center font-bold text-base transition ${
+            className={`py-3 px-4 border text-center text-xs font-semibold transition ${
               val === "no" || val === false
-                ? "bg-emerald-600 border-emerald-600 text-white shadow-md"
-                : "bg-slate-50 border-slate-200 text-slate-800 hover:bg-slate-100"
+                ? "bg-zinc-950 border-zinc-950 text-white"
+                : "bg-white border-zinc-200 text-zinc-800 hover:border-zinc-400"
             }`}
           >
             No
@@ -625,29 +567,21 @@ function renderQuestionContent(
       };
 
       return (
-        <div className="space-y-2.5">
+        <div className="space-y-1.5">
           {options.map((opt) => {
             const selected = selectedList.includes(opt);
             return (
               <button
                 key={opt}
                 onClick={() => toggle(opt)}
-                className={`w-full p-4 rounded-xl border text-left transition flex items-center justify-between ${
+                className={`w-full p-3 border text-left transition flex items-center justify-between ${
                   selected
-                    ? "bg-emerald-50 border-emerald-500 ring-2 ring-emerald-500 text-emerald-950"
-                    : "bg-slate-50 border-slate-200 text-slate-800 hover:bg-slate-100"
+                    ? "bg-zinc-950 border-zinc-950 text-white"
+                    : "bg-white border-zinc-200 text-zinc-800 hover:border-zinc-400"
                 }`}
               >
-                <span className="font-semibold text-sm sm:text-base">{opt}</span>
-                <div
-                  className={`w-6 h-6 rounded-lg flex items-center justify-center border shrink-0 transition ${
-                    selected
-                      ? "bg-emerald-600 border-emerald-600 text-white"
-                      : "border-slate-300 bg-white"
-                  }`}
-                >
-                  {selected && <Check className="w-4 h-4" />}
-                </div>
+                <span className="text-xs font-medium">{opt}</span>
+                {selected && <Check className="w-3.5 h-3.5 text-white shrink-0" />}
               </button>
             );
           })}
@@ -659,24 +593,24 @@ function renderQuestionContent(
     case 11: {
       const h = formData.habits || {};
       return (
-        <div className="space-y-4">
+        <div className="space-y-3">
           {/* Smoking */}
-          <div className="p-3.5 rounded-xl border border-slate-200 bg-slate-50">
+          <div className="p-3 border border-zinc-200 bg-white">
             <div className="flex items-center justify-between mb-2">
-              <span className="text-sm font-semibold text-slate-800">Do you smoke?</span>
-              <div className="flex gap-2">
+              <span className="text-xs font-medium text-zinc-900">Smoking</span>
+              <div className="flex gap-1">
                 <button
                   onClick={() => updateHabit("smoking", "no")}
-                  className={`px-3 py-1 text-xs font-semibold rounded-lg border ${
-                    h.smoking === "no" ? "bg-emerald-600 border-emerald-600 text-white" : "bg-white text-slate-700"
+                  className={`px-2.5 py-1 text-xs border ${
+                    h.smoking === "no" ? "bg-zinc-950 text-white border-zinc-950" : "bg-white text-zinc-700 border-zinc-200"
                   }`}
                 >
                   No
                 </button>
                 <button
                   onClick={() => updateHabit("smoking", "yes")}
-                  className={`px-3 py-1 text-xs font-semibold rounded-lg border ${
-                    h.smoking === "yes" ? "bg-emerald-600 border-emerald-600 text-white" : "bg-white text-slate-700"
+                  className={`px-2.5 py-1 text-xs border ${
+                    h.smoking === "yes" ? "bg-zinc-950 text-white border-zinc-950" : "bg-white text-zinc-700 border-zinc-200"
                   }`}
                 >
                   Yes
@@ -684,14 +618,14 @@ function renderQuestionContent(
               </div>
             </div>
             {h.smoking === "yes" && (
-              <div className="pt-2 border-t border-slate-200 flex items-center gap-2">
-                <span className="text-xs text-slate-600">Severity:</span>
+              <div className="pt-2 border-t border-zinc-100 flex items-center gap-1.5">
+                <span className="text-[11px] font-mono text-zinc-400">Severity:</span>
                 {(["Mild <5/day", "Moderate 5-10/day", "Severe >10/day"] as SmokingSeverity[]).map((s) => (
                   <button
                     key={s}
                     onClick={() => updateHabit("smoking_severity", s)}
-                    className={`px-2.5 py-1 text-xs rounded-lg border ${
-                      h.smoking_severity === s ? "bg-emerald-600 text-white border-emerald-600" : "bg-white text-slate-700"
+                    className={`px-2 py-0.5 text-[11px] font-mono border ${
+                      h.smoking_severity === s ? "bg-zinc-950 text-white border-zinc-950" : "bg-white text-zinc-600 border-zinc-200"
                     }`}
                   >
                     {s}
@@ -702,21 +636,21 @@ function renderQuestionContent(
           </div>
 
           {/* Hard water */}
-          <div className="p-3.5 rounded-xl border border-slate-200 bg-slate-50 flex items-center justify-between">
-            <span className="text-sm font-semibold text-slate-800">Hard water used for hair wash?</span>
-            <div className="flex gap-2">
+          <div className="p-3 border border-zinc-200 bg-white flex items-center justify-between">
+            <span className="text-xs font-medium text-zinc-900">Hard water used for hair wash?</span>
+            <div className="flex gap-1">
               <button
                 onClick={() => updateHabit("hard_water", "no")}
-                className={`px-3 py-1 text-xs font-semibold rounded-lg border ${
-                  h.hard_water === "no" ? "bg-emerald-600 border-emerald-600 text-white" : "bg-white text-slate-700"
+                className={`px-2.5 py-1 text-xs border ${
+                  h.hard_water === "no" ? "bg-zinc-950 text-white border-zinc-950" : "bg-white text-zinc-700 border-zinc-200"
                 }`}
               >
                 No
               </button>
               <button
                 onClick={() => updateHabit("hard_water", "yes")}
-                className={`px-3 py-1 text-xs font-semibold rounded-lg border ${
-                  h.hard_water === "yes" ? "bg-emerald-600 border-emerald-600 text-white" : "bg-white text-slate-700"
+                className={`px-2.5 py-1 text-xs border ${
+                  h.hard_water === "yes" ? "bg-zinc-950 text-white border-zinc-950" : "bg-white text-zinc-700 border-zinc-200"
                 }`}
               >
                 Yes
@@ -725,15 +659,15 @@ function renderQuestionContent(
           </div>
 
           {/* Wash frequency */}
-          <div className="p-3.5 rounded-xl border border-slate-200 bg-slate-50">
-            <span className="text-sm font-semibold text-slate-800 block mb-2">Hair wash frequency:</span>
-            <div className="grid grid-cols-3 gap-2">
+          <div className="p-3 border border-zinc-200 bg-white">
+            <span className="text-xs font-medium text-zinc-900 block mb-2">Wash frequency:</span>
+            <div className="grid grid-cols-3 gap-1.5">
               {(["Daily", "Alternate Days", "Weekly"] as HairWashFrequency[]).map((f) => (
                 <button
                   key={f}
                   onClick={() => updateHabit("hair_wash_frequency", f)}
-                  className={`py-2 text-xs font-semibold rounded-lg border text-center ${
-                    h.hair_wash_frequency === f ? "bg-emerald-600 border-emerald-600 text-white" : "bg-white text-slate-700"
+                  className={`py-1.5 text-xs font-medium border text-center ${
+                    h.hair_wash_frequency === f ? "bg-zinc-950 text-white border-zinc-950" : "bg-white text-zinc-700 border-zinc-200"
                   }`}
                 >
                   {f}
@@ -743,22 +677,22 @@ function renderQuestionContent(
           </div>
 
           {/* Styling & Salon */}
-          <div className="p-3.5 rounded-xl border border-slate-200 bg-slate-50 space-y-3">
+          <div className="p-3 border border-zinc-200 bg-white space-y-2">
             <div className="flex items-center justify-between">
-              <span className="text-sm font-semibold text-slate-800">Heating tools / styling chemicals?</span>
-              <div className="flex gap-2">
+              <span className="text-xs font-medium text-zinc-900">Heat tools / styling chemicals?</span>
+              <div className="flex gap-1">
                 <button
                   onClick={() => updateHabit("heating_tools_styling_chemicals", "no")}
-                  className={`px-3 py-1 text-xs font-semibold rounded-lg border ${
-                    h.heating_tools_styling_chemicals === "no" ? "bg-emerald-600 text-white" : "bg-white text-slate-700"
+                  className={`px-2.5 py-1 text-xs border ${
+                    h.heating_tools_styling_chemicals === "no" ? "bg-zinc-950 text-white border-zinc-950" : "bg-white text-zinc-700 border-zinc-200"
                   }`}
                 >
                   No
                 </button>
                 <button
                   onClick={() => updateHabit("heating_tools_styling_chemicals", "yes")}
-                  className={`px-3 py-1 text-xs font-semibold rounded-lg border ${
-                    h.heating_tools_styling_chemicals === "yes" ? "bg-emerald-600 text-white" : "bg-white text-slate-700"
+                  className={`px-2.5 py-1 text-xs border ${
+                    h.heating_tools_styling_chemicals === "yes" ? "bg-zinc-950 text-white border-zinc-950" : "bg-white text-zinc-700 border-zinc-200"
                   }`}
                 >
                   Yes
@@ -766,21 +700,21 @@ function renderQuestionContent(
               </div>
             </div>
 
-            <div className="flex items-center justify-between pt-2 border-t border-slate-200">
-              <span className="text-sm font-semibold text-slate-800">Salon treatments (keratin, rebonding)?</span>
-              <div className="flex gap-2">
+            <div className="flex items-center justify-between pt-2 border-t border-zinc-100">
+              <span className="text-xs font-medium text-zinc-900">Salon treatments (keratin, etc.)?</span>
+              <div className="flex gap-1">
                 <button
                   onClick={() => updateHabit("salon_treatments", "no")}
-                  className={`px-3 py-1 text-xs font-semibold rounded-lg border ${
-                    h.salon_treatments === "no" ? "bg-emerald-600 text-white" : "bg-white text-slate-700"
+                  className={`px-2.5 py-1 text-xs border ${
+                    h.salon_treatments === "no" ? "bg-zinc-950 text-white border-zinc-950" : "bg-white text-zinc-700 border-zinc-200"
                   }`}
                 >
                   No
                 </button>
                 <button
                   onClick={() => updateHabit("salon_treatments", "yes")}
-                  className={`px-3 py-1 text-xs font-semibold rounded-lg border ${
-                    h.salon_treatments === "yes" ? "bg-emerald-600 text-white" : "bg-white text-slate-700"
+                  className={`px-2.5 py-1 text-xs border ${
+                    h.salon_treatments === "yes" ? "bg-zinc-950 text-white border-zinc-950" : "bg-white text-zinc-700 border-zinc-200"
                   }`}
                 >
                   Yes
@@ -792,8 +726,8 @@ function renderQuestionContent(
                 type="text"
                 value={h.salon_treatment_detail || ""}
                 onChange={(e) => updateHabit("salon_treatment_detail", e.target.value)}
-                placeholder="Which salon treatment? (e.g. Keratin 6 months ago)"
-                className="w-full text-xs p-2 rounded-lg border border-slate-300"
+                placeholder="Specify treatment (e.g. Keratin 6mo ago)"
+                className="w-full text-xs p-2 border border-zinc-300 font-mono"
               />
             )}
           </div>
@@ -804,24 +738,24 @@ function renderQuestionContent(
     // Q12: Products (Progressive Disclosure)
     case 12: {
       return (
-        <div className="space-y-3">
+        <div className="space-y-2">
           {PRODUCT_KEYS.map((key) => {
             const usage = formData.products[key] || { used: false };
             return (
               <div
                 key={key}
-                className={`p-3.5 rounded-xl border transition ${
-                  usage.used ? "bg-emerald-50/60 border-emerald-400" : "bg-slate-50 border-slate-200"
+                className={`p-3 border transition ${
+                  usage.used ? "bg-zinc-50 border-zinc-950" : "bg-white border-zinc-200"
                 }`}
               >
                 <div className="flex items-center justify-between">
-                  <span className="font-bold text-sm sm:text-base text-slate-900">{key}</span>
+                  <span className="font-semibold text-xs text-zinc-900">{key}</span>
                   <button
                     onClick={() => updateProduct(key, { used: !usage.used })}
-                    className={`px-3.5 py-1.5 rounded-lg text-xs font-bold border transition ${
+                    className={`px-2.5 py-1 text-xs font-mono border transition ${
                       usage.used
-                        ? "bg-emerald-600 border-emerald-600 text-white"
-                        : "bg-white border-slate-300 text-slate-700 hover:bg-slate-100"
+                        ? "bg-zinc-950 text-white border-zinc-950"
+                        : "bg-white border-zinc-300 text-zinc-700 hover:border-zinc-400"
                     }`}
                   >
                     {usage.used ? "Used ✓" : "Never Used"}
@@ -829,19 +763,19 @@ function renderQuestionContent(
                 </div>
 
                 {usage.used && (
-                  <div className="mt-3 pt-3 border-t border-emerald-200/60 space-y-2.5 text-xs animate-fade-in">
+                  <div className="mt-3 pt-3 border-t border-zinc-200 space-y-2 text-xs">
                     {/* Duration */}
                     <div className="flex items-center justify-between gap-2">
-                      <span className="text-slate-600 font-medium">Duration:</span>
-                      <div className="flex gap-1.5">
+                      <span className="text-zinc-500 font-mono text-[11px]">Duration:</span>
+                      <div className="flex gap-1">
                         {(["<3mo", "3-6mo", ">6mo"] as const).map((d) => (
                           <button
                             key={d}
                             onClick={() => updateProduct(key, { duration: d })}
-                            className={`px-2.5 py-1 rounded-md border ${
+                            className={`px-2 py-0.5 text-xs font-mono border ${
                               usage.duration === d
-                                ? "bg-emerald-700 text-white border-emerald-700 font-bold"
-                                : "bg-white border-slate-200 text-slate-700"
+                                ? "bg-zinc-950 text-white border-zinc-950"
+                                : "bg-white border-zinc-200 text-zinc-700"
                             }`}
                           >
                             {d}
@@ -852,20 +786,20 @@ function renderQuestionContent(
 
                     {/* Helped */}
                     <div className="flex items-center justify-between gap-2">
-                      <span className="text-slate-600 font-medium">Did it help?</span>
-                      <div className="flex gap-1.5">
+                      <span className="text-zinc-500 font-mono text-[11px]">Helped:</span>
+                      <div className="flex gap-1">
                         <button
                           onClick={() => updateProduct(key, { helped: "yes" })}
-                          className={`px-3 py-1 rounded-md border ${
-                            usage.helped === "yes" ? "bg-emerald-700 text-white font-bold" : "bg-white text-slate-700"
+                          className={`px-2 py-0.5 text-xs font-mono border ${
+                            usage.helped === "yes" ? "bg-zinc-950 text-white border-zinc-950" : "bg-white text-zinc-700 border-zinc-200"
                           }`}
                         >
                           Yes
                         </button>
                         <button
                           onClick={() => updateProduct(key, { helped: "no" })}
-                          className={`px-3 py-1 rounded-md border ${
-                            usage.helped === "no" ? "bg-slate-700 text-white font-bold" : "bg-white text-slate-700"
+                          className={`px-2 py-0.5 text-xs font-mono border ${
+                            usage.helped === "no" ? "bg-zinc-950 text-white border-zinc-950" : "bg-white text-zinc-700 border-zinc-200"
                           }`}
                         >
                           No
@@ -875,20 +809,20 @@ function renderQuestionContent(
 
                     {/* Side effects */}
                     <div className="flex items-center justify-between gap-2">
-                      <span className="text-slate-600 font-medium">Any side effects?</span>
-                      <div className="flex gap-1.5">
+                      <span className="text-zinc-500 font-mono text-[11px]">Side effects:</span>
+                      <div className="flex gap-1">
                         <button
                           onClick={() => updateProduct(key, { side_effects: "yes" })}
-                          className={`px-3 py-1 rounded-md border ${
-                            usage.side_effects === "yes" ? "bg-rose-600 text-white font-bold" : "bg-white text-slate-700"
+                          className={`px-2 py-0.5 text-xs font-mono border ${
+                            usage.side_effects === "yes" ? "bg-zinc-950 text-white border-zinc-950" : "bg-white text-zinc-700 border-zinc-200"
                           }`}
                         >
                           Yes
                         </button>
                         <button
                           onClick={() => updateProduct(key, { side_effects: "no" })}
-                          className={`px-3 py-1 rounded-md border ${
-                            usage.side_effects === "no" ? "bg-emerald-700 text-white font-bold" : "bg-white text-slate-700"
+                          className={`px-2 py-0.5 text-xs font-mono border ${
+                            usage.side_effects === "no" ? "bg-zinc-950 text-white border-zinc-950" : "bg-white text-zinc-700 border-zinc-200"
                           }`}
                         >
                           No
@@ -907,24 +841,24 @@ function renderQuestionContent(
     // Q13: In-clinic Procedures
     case 13: {
       return (
-        <div className="space-y-3">
+        <div className="space-y-2">
           {PROCEDURE_KEYS.map((proc) => {
             const usage = formData.procedures[proc] || { done: false };
             return (
               <div
                 key={proc}
-                className={`p-3.5 rounded-xl border transition ${
-                  usage.done ? "bg-emerald-50/60 border-emerald-400" : "bg-slate-50 border-slate-200"
+                className={`p-3 border transition ${
+                  usage.done ? "bg-zinc-50 border-zinc-950" : "bg-white border-zinc-200"
                 }`}
               >
                 <div className="flex items-center justify-between">
-                  <span className="font-bold text-sm sm:text-base text-slate-900">{proc}</span>
+                  <span className="font-semibold text-xs text-zinc-900">{proc}</span>
                   <button
                     onClick={() => updateProcedure(proc, { done: !usage.done })}
-                    className={`px-3.5 py-1.5 rounded-lg text-xs font-bold border transition ${
+                    className={`px-2.5 py-1 text-xs font-mono border transition ${
                       usage.done
-                        ? "bg-emerald-600 border-emerald-600 text-white"
-                        : "bg-white border-slate-300 text-slate-700 hover:bg-slate-100"
+                        ? "bg-zinc-950 text-white border-zinc-950"
+                        : "bg-white border-zinc-300 text-zinc-700 hover:border-zinc-400"
                     }`}
                   >
                     {usage.done ? "Done ✓" : "Never Done"}
@@ -932,18 +866,18 @@ function renderQuestionContent(
                 </div>
 
                 {usage.done && (
-                  <div className="mt-3 pt-3 border-t border-emerald-200/60 space-y-2.5 text-xs animate-fade-in">
+                  <div className="mt-3 pt-3 border-t border-zinc-200 space-y-2 text-xs">
                     <div className="flex items-center justify-between gap-2">
-                      <span className="text-slate-600 font-medium">Sessions done:</span>
-                      <div className="flex gap-1.5">
+                      <span className="text-zinc-500 font-mono text-[11px]">Sessions:</span>
+                      <div className="flex gap-1">
                         {(["1-3", "4-6", ">6"] as const).map((s) => (
                           <button
                             key={s}
                             onClick={() => updateProcedure(proc, { sessions: s })}
-                            className={`px-2.5 py-1 rounded-md border ${
+                            className={`px-2 py-0.5 text-xs font-mono border ${
                               usage.sessions === s
-                                ? "bg-emerald-700 text-white border-emerald-700 font-bold"
-                                : "bg-white border-slate-200 text-slate-700"
+                                ? "bg-zinc-950 text-white border-zinc-950"
+                                : "bg-white border-zinc-200 text-zinc-700"
                             }`}
                           >
                             {s}
@@ -953,20 +887,20 @@ function renderQuestionContent(
                     </div>
 
                     <div className="flex items-center justify-between gap-2">
-                      <span className="text-slate-600 font-medium">Did it help?</span>
-                      <div className="flex gap-1.5">
+                      <span className="text-zinc-500 font-mono text-[11px]">Helped:</span>
+                      <div className="flex gap-1">
                         <button
                           onClick={() => updateProcedure(proc, { helped: "yes" })}
-                          className={`px-3 py-1 rounded-md border ${
-                            usage.helped === "yes" ? "bg-emerald-700 text-white font-bold" : "bg-white text-slate-700"
+                          className={`px-2 py-0.5 text-xs font-mono border ${
+                            usage.helped === "yes" ? "bg-zinc-950 text-white border-zinc-950" : "bg-white text-zinc-700 border-zinc-200"
                           }`}
                         >
                           Yes
                         </button>
                         <button
                           onClick={() => updateProcedure(proc, { helped: "no" })}
-                          className={`px-3 py-1 rounded-md border ${
-                            usage.helped === "no" ? "bg-slate-700 text-white font-bold" : "bg-white text-slate-700"
+                          className={`px-2 py-0.5 text-xs font-mono border ${
+                            usage.helped === "no" ? "bg-zinc-950 text-white border-zinc-950" : "bg-white text-zinc-700 border-zinc-200"
                           }`}
                         >
                           No
@@ -986,24 +920,24 @@ function renderQuestionContent(
     case 14: {
       const val = formData.past_treatment_side_effects;
       return (
-        <div className="space-y-4">
-          <div className="grid grid-cols-2 gap-4 max-w-sm">
+        <div className="space-y-3">
+          <div className="grid grid-cols-2 gap-3 max-w-xs">
             <button
               onClick={() => updateField("past_treatment_side_effects", "yes")}
-              className={`py-4 px-6 rounded-xl border text-center font-bold text-base transition ${
+              className={`py-3 px-4 border text-center text-xs font-semibold transition ${
                 val === "yes" || val === true
-                  ? "bg-rose-600 border-rose-600 text-white shadow-md"
-                  : "bg-slate-50 border-slate-200 text-slate-800 hover:bg-slate-100"
+                  ? "bg-zinc-950 border-zinc-950 text-white"
+                  : "bg-white border-zinc-200 text-zinc-800 hover:border-zinc-400"
               }`}
             >
               Yes
             </button>
             <button
               onClick={() => updateField("past_treatment_side_effects", "no")}
-              className={`py-4 px-6 rounded-xl border text-center font-bold text-base transition ${
+              className={`py-3 px-4 border text-center text-xs font-semibold transition ${
                 val === "no" || val === false
-                  ? "bg-emerald-600 border-emerald-600 text-white shadow-md"
-                : "bg-slate-50 border-slate-200 text-slate-800 hover:bg-slate-100"
+                  ? "bg-zinc-950 border-zinc-950 text-white"
+                  : "bg-white border-zinc-200 text-zinc-800 hover:border-zinc-400"
               }`}
             >
               No
@@ -1012,8 +946,8 @@ function renderQuestionContent(
 
           {(val === "yes" || val === true) && (
             <div className="pt-2">
-              <label className="block text-xs font-semibold text-slate-700 mb-1">
-                Please describe the side effect or reaction:
+              <label className="block text-xs font-mono text-zinc-500 mb-1">
+                Describe reaction:
               </label>
               <textarea
                 rows={2}
@@ -1021,8 +955,8 @@ function renderQuestionContent(
                 onChange={(e) =>
                   updateField("past_treatment_side_effects_detail", e.target.value)
                 }
-                placeholder="e.g. Scalp rash, itching with minoxidil, or dizziness..."
-                className="w-full text-sm p-3 rounded-xl border border-slate-300 focus:ring-2 focus:ring-emerald-500 text-slate-800"
+                placeholder="e.g. Scalp dermatitis or irritation with minoxidil"
+                className="w-full text-xs p-2.5 border border-zinc-300 focus:border-zinc-950 text-zinc-900"
               />
             </div>
           )}
@@ -1034,26 +968,21 @@ function renderQuestionContent(
     case 15: {
       const options: SampleTypeOption[] = ["Saliva", "Blood", "Either"];
       return (
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
           {options.map((opt) => {
             const selected = formData.sample_type === opt;
             return (
               <button
                 key={opt}
                 onClick={() => updateField("sample_type", opt)}
-                className={`p-4 rounded-xl border text-left transition flex flex-col justify-between min-h-[90px] ${
+                className={`p-3.5 border text-left transition flex items-center justify-between ${
                   selected
-                    ? "bg-emerald-50 border-emerald-500 ring-2 ring-emerald-500 text-emerald-950"
-                    : "bg-slate-50 border-slate-200 text-slate-800 hover:bg-slate-100"
+                    ? "bg-zinc-950 border-zinc-950 text-white"
+                    : "bg-white border-zinc-200 text-zinc-800 hover:border-zinc-400"
                 }`}
               >
-                <span className="font-bold text-base sm:text-lg">{opt}</span>
-                <span className="text-xs text-slate-500">
-                  {opt === "Saliva" && "Simple cheek swab"}
-                  {opt === "Blood" && "Micronutrient serum panel"}
-                  {opt === "Either" && "Clinic choice"}
-                </span>
-                {selected && <Check className="w-5 h-5 text-emerald-600 self-end mt-1" />}
+                <span className="text-xs font-medium">{opt}</span>
+                {selected && <Check className="w-3.5 h-3.5 text-white" />}
               </button>
             );
           })}
@@ -1066,29 +995,29 @@ function renderQuestionContent(
       const val = formData.consent;
       return (
         <div className="space-y-4">
-          <div className="p-4 rounded-xl bg-slate-50 border border-slate-200 text-xs text-slate-600 leading-relaxed">
-            I hereby consent to hair and scalp sample collection (saliva or blood) and relevant trichological genetic / biochemical biomarker analysis for clinical evaluation and formulation of my personalized treatment plan.
-          </div>
-          <div className="grid grid-cols-2 gap-4 max-w-sm">
+          <p className="p-3 border border-zinc-200 bg-zinc-50 text-xs text-zinc-600 leading-relaxed font-mono">
+            I hereby consent to hair and scalp sample collection (saliva or blood) and relevant trichological biomarker analysis for clinical evaluation.
+          </p>
+          <div className="grid grid-cols-2 gap-3 max-w-xs">
             <button
               onClick={() => updateField("consent", "yes")}
-              className={`py-4 px-6 rounded-xl border text-center font-bold text-base transition ${
+              className={`py-3 px-4 border text-center text-xs font-semibold transition ${
                 val === "yes" || val === true
-                  ? "bg-emerald-600 border-emerald-600 text-white shadow-md"
-                  : "bg-slate-50 border-slate-200 text-slate-800 hover:bg-slate-100"
+                  ? "bg-zinc-950 border-zinc-950 text-white"
+                  : "bg-white border-zinc-200 text-zinc-800 hover:border-zinc-400"
               }`}
             >
-              I Agree & Consent
+              Consent
             </button>
             <button
               onClick={() => updateField("consent", "no")}
-              className={`py-4 px-6 rounded-xl border text-center font-bold text-base transition ${
+              className={`py-3 px-4 border text-center text-xs font-semibold transition ${
                 val === "no" || val === false
-                  ? "bg-slate-800 border-slate-800 text-white shadow-md"
-                  : "bg-slate-50 border-slate-200 text-slate-800 hover:bg-slate-100"
+                  ? "bg-zinc-950 border-zinc-950 text-white"
+                  : "bg-white border-zinc-200 text-zinc-800 hover:border-zinc-400"
               }`}
             >
-              Do Not Consent
+              Decline
             </button>
           </div>
         </div>

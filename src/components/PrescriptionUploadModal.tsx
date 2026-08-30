@@ -2,7 +2,7 @@
 
 import React, { useState } from "react";
 import { useIntake } from "@/context/IntakeContext";
-import { X, Upload, FileText, Sparkles, Loader2, Check } from "lucide-react";
+import { X, Upload, FileText, Loader2, Check } from "lucide-react";
 
 const SAMPLE_RX_1 = `Dr. Anita Sen, MD Dermatology & Trichology
 Rx:
@@ -50,7 +50,6 @@ export function PrescriptionUploadModal() {
       let imagePayload: { base64Data: string; mimeType: string } | null = null;
 
       if (fileToSend) {
-        // Convert file to base64
         const reader = new FileReader();
         const base64Promise = new Promise<{ base64Data: string; mimeType: string }>((resolve) => {
           reader.onload = () => {
@@ -64,7 +63,7 @@ export function PrescriptionUploadModal() {
       }
 
       const promptText = textToProcess
-        ? `Medical Document / Prescription Content:\n${textToProcess}`
+        ? `Medical Document Content:\n${textToProcess}`
         : "Extract hair clinic medications, products, durations, and diagnosed conditions from this uploaded document.";
 
       const res = await fetch("/api/extract", {
@@ -84,12 +83,12 @@ export function PrescriptionUploadModal() {
         applyExtractedDelta(
           data.extractedFields,
           data.fieldsUpdated || ["Prescription Auto-Fill"],
-          data.doctorVoiceResponse || "Prescription successfully scanned and medications populated."
+          data.doctorVoiceResponse || "Prescription scanned and medications populated."
         );
-        setSuccessMsg(`Extracted ${data.fieldsUpdated?.length || "multiple"} fields successfully!`);
+        setSuccessMsg(`Extracted ${data.fieldsUpdated?.length || "multiple"} fields.`);
         setTimeout(() => {
           setPrescriptionModalOpen(false);
-        }, 1200);
+        }, 1000);
       }
     } catch (err) {
       console.error("Rx scan error:", err);
@@ -99,52 +98,45 @@ export function PrescriptionUploadModal() {
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm animate-fade-in">
-      <div className="bg-white rounded-2xl max-w-lg w-full p-5 sm:p-6 shadow-2xl border border-slate-200 relative max-h-[90vh] overflow-y-auto">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-xs">
+      <div className="bg-white border border-zinc-300 max-w-md w-full p-6 relative max-h-[90vh] overflow-y-auto">
         <button
           onClick={() => setPrescriptionModalOpen(false)}
-          className="absolute top-4 right-4 p-1.5 rounded-full hover:bg-slate-100 text-slate-400 hover:text-slate-700 transition"
-          aria-label="Close modal"
+          className="absolute top-4 right-4 p-1 text-zinc-400 hover:text-zinc-950 transition"
+          aria-label="Close"
         >
-          <X className="w-5 h-5" />
+          <X className="w-4 h-4" />
         </button>
 
-        <div className="flex items-center gap-2.5 mb-2">
-          <div className="w-9 h-9 rounded-xl bg-emerald-100 text-emerald-700 flex items-center justify-center">
-            <Upload className="w-5 h-5" />
-          </div>
-          <div>
-            <h3 className="text-lg font-bold text-slate-900">
-              Scan Prescription or Blood Report
-            </h3>
-            <p className="text-xs text-slate-500">
-              AI extracts products, dosages, and conditions automatically
-            </p>
-          </div>
+        <div className="text-[11px] font-mono uppercase tracking-widest text-zinc-400 mb-1">
+          Optical Analysis
         </div>
+        <h3 className="text-base font-bold text-zinc-950 mb-1">
+          Upload Medical Document
+        </h3>
+        <p className="text-xs text-zinc-500 mb-4">
+          Upload a prescription photo or lab report to auto-fill products & conditions.
+        </p>
 
         {/* Upload Box */}
-        <div className="my-4">
-          <label className="border-2 border-dashed border-slate-300 hover:border-emerald-500 rounded-xl p-5 flex flex-col items-center justify-center cursor-pointer transition bg-slate-50 hover:bg-emerald-50/40">
+        <div className="mb-4">
+          <label className="border border-dashed border-zinc-300 hover:border-zinc-950 p-4 flex flex-col items-center justify-center cursor-pointer transition bg-zinc-50 hover:bg-zinc-100/50">
             {previewUrl ? (
               <div className="flex flex-col items-center">
                 <img
                   src={previewUrl}
                   alt="Prescription preview"
-                  className="max-h-36 rounded-lg object-contain shadow-sm mb-2"
+                  className="max-h-28 object-contain mb-2 border border-zinc-200"
                 />
-                <span className="text-xs text-emerald-700 font-medium">
-                  Change selected photo
+                <span className="text-xs font-mono text-zinc-900 underline">
+                  Replace image
                 </span>
               </div>
             ) : (
               <>
-                <FileText className="w-8 h-8 text-slate-400 mb-2" />
-                <span className="text-sm font-medium text-slate-700">
-                  Tap to upload prescription or report photo
-                </span>
-                <span className="text-xs text-slate-400 mt-1">
-                  Supports PNG, JPG, JPEG
+                <FileText className="w-6 h-6 text-zinc-400 mb-1.5" />
+                <span className="text-xs font-medium text-zinc-800">
+                  Select image file (PNG / JPG)
                 </span>
               </>
             )}
@@ -157,62 +149,60 @@ export function PrescriptionUploadModal() {
           </label>
         </div>
 
-        {/* Or Text Area */}
+        {/* Text area fallback */}
         <div className="mb-4">
-          <label className="block text-xs font-semibold text-slate-700 mb-1">
-            Or paste prescription text:
+          <label className="block text-xs font-mono text-zinc-600 uppercase mb-1">
+            Or paste text:
           </label>
           <textarea
             rows={3}
             value={rxText}
             onChange={(e) => setRxText(e.target.value)}
-            placeholder="e.g. Minoxidil 5% topical solution, Biotin 10mg daily for 6 months..."
-            className="w-full text-xs sm:text-sm p-2.5 rounded-xl border border-slate-300 focus:outline-none focus:ring-2 focus:ring-emerald-500 text-slate-800"
+            placeholder="e.g. Minoxidil 5% topical solution for 6 months..."
+            className="w-full text-xs p-2.5 border border-zinc-300 focus:outline-none focus:border-zinc-950 text-zinc-900 font-mono"
           />
         </div>
 
-        {/* Quick Sample Prescriptions for Reviewer */}
-        <div className="mb-4 bg-slate-50 rounded-xl p-3 border border-slate-200 text-xs">
-          <div className="flex items-center gap-1 font-semibold text-slate-700 mb-2">
-            <Sparkles className="w-3.5 h-3.5 text-amber-500" />
-            <span>Quick Test Samples (Click to load):</span>
-          </div>
-          <div className="flex flex-col gap-1.5">
+        {/* Sample presets */}
+        <div className="mb-4 border-t border-zinc-100 pt-3">
+          <span className="text-[11px] font-mono text-zinc-400 block mb-1.5 uppercase">
+            Test Samples:
+          </span>
+          <div className="space-y-1.5">
             <button
               onClick={() => setRxText(SAMPLE_RX_1)}
-              className="text-left p-2 rounded-lg bg-white border border-slate-200 hover:border-emerald-400 hover:bg-emerald-50/50 transition text-slate-700"
+              className="w-full text-left p-2 border border-zinc-200 hover:border-zinc-950 text-xs font-mono text-zinc-800 transition"
             >
-              <strong className="text-emerald-800">Sample 1:</strong> Minoxidil 5% + Ketoconazole + Biotin
+              Rx Sample: Minoxidil 5% + Ketoconazole + Biotin
             </button>
             <button
               onClick={() => setRxText(SAMPLE_RX_2)}
-              className="text-left p-2 rounded-lg bg-white border border-slate-200 hover:border-emerald-400 hover:bg-emerald-50/50 transition text-slate-700"
+              className="w-full text-left p-2 border border-zinc-200 hover:border-zinc-950 text-xs font-mono text-zinc-800 transition"
             >
-              <strong className="text-emerald-800">Sample 2:</strong> Lab Report: Low Ferritin (Anemia) + TSH + PCOS
+              Lab Sample: Low Ferritin (Anemia) + TSH + PCOS
             </button>
           </div>
         </div>
 
         {successMsg && (
-          <div className="mb-3 p-2.5 rounded-xl bg-emerald-50 border border-emerald-300 text-emerald-800 text-xs font-semibold flex items-center gap-2">
-            <Check className="w-4 h-4" />
+          <div className="mb-3 p-2 bg-zinc-100 border border-zinc-300 text-zinc-950 text-xs font-mono flex items-center gap-1.5">
+            <Check className="w-3.5 h-3.5" />
             {successMsg}
           </div>
         )}
 
-        {/* Action Button */}
         <button
           onClick={() => handleProcess(rxText, selectedFile)}
           disabled={isProcessing || (!rxText && !selectedFile)}
-          className="w-full py-3 px-4 rounded-xl bg-emerald-600 hover:bg-emerald-700 disabled:opacity-50 text-white font-semibold text-sm transition flex items-center justify-center gap-2 shadow-md"
+          className="w-full py-2.5 px-4 bg-zinc-950 hover:bg-zinc-800 disabled:opacity-30 text-white font-mono text-xs uppercase tracking-wider transition flex items-center justify-center gap-2"
         >
           {isProcessing ? (
             <>
-              <Loader2 className="w-4 h-4 animate-spin" />
-              <span>Analyzing Document with Gemini 2.5 Flash...</span>
+              <Loader2 className="w-3.5 h-3.5 animate-spin" />
+              <span>Analyzing Document...</span>
             </>
           ) : (
-            <span>Extract & Auto-Fill Form</span>
+            <span>Extract & Auto-Fill</span>
           )}
         </button>
       </div>

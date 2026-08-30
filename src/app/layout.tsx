@@ -15,9 +15,9 @@ const geistMono = localFont({
 });
 
 export const metadata: Metadata = {
-  title: "GenoRoot Hair & Scalp Clinic · The Intake That Fills Itself",
+  title: "GenoRoot · Hair & Scalp Intake",
   description:
-    "An ambient, voice-copilot intake that eliminates manual forms for patients and delivers instant structured data to trichologists.",
+    "Self-filling intake engine for hair and scalp clinical consultations.",
 };
 
 export default function RootLayout({
@@ -28,7 +28,7 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body
-        className={`${geistSans.variable} ${geistMono.variable} antialiased bg-slate-100 text-slate-900 min-h-screen`}
+        className={`${geistSans.variable} ${geistMono.variable} antialiased bg-white text-zinc-950 min-h-screen`}
       >
         <IntakeProvider>{children}</IntakeProvider>
       </body>
