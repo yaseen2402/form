@@ -56,7 +56,7 @@ export function QuestionCard() {
   // Intro / Demographics Screen (Index 0)
   if (activeQuestionIndex === 0) {
     return (
-      <div className="bg-white border border-zinc-200 p-6 sm:p-8 max-w-xl mx-auto">
+      <div className="bg-white border border-zinc-200 p-4 sm:p-8 max-w-xl mx-auto">
         <div className="text-[11px] font-mono uppercase tracking-widest text-zinc-400 mb-2">
           Clinical Intake · Step 00
         </div>
@@ -158,7 +158,7 @@ export function QuestionCard() {
   const formattedNum = String(meta.n).padStart(2, "0");
 
   return (
-    <div className="bg-white border border-zinc-200 p-6 sm:p-8 max-w-2xl mx-auto">
+    <div className="bg-white border border-zinc-200 p-4 sm:p-8 max-w-2xl mx-auto">
       {/* Header Info */}
       <div className="flex items-center justify-between text-xs font-mono text-zinc-400 mb-3 border-b border-zinc-100 pb-2">
         <span>Section {meta.sectionId} · {meta.sectionTitle}</span>
@@ -206,20 +206,20 @@ export function QuestionCard() {
       )}
 
       {/* Navigation Footer with Voice Button in the same row */}
-      <div className="flex items-center justify-between pt-4 border-t border-zinc-100 gap-2">
+      <div className="flex items-center justify-between pt-4 border-t border-zinc-100 gap-1 sm:gap-2 flex-nowrap">
         <button
           onClick={prevStep}
-          className="flex items-center gap-1 text-xs font-mono text-zinc-500 hover:text-zinc-950 px-2 py-1.5 transition"
+          className="flex items-center gap-1 text-xs font-mono text-zinc-600 hover:text-zinc-950 px-2 py-1.5 transition whitespace-nowrap shrink-0"
         >
-          <ArrowLeft className="w-3.5 h-3.5" />
-          <span>Previous</span>
+          <ArrowLeft className="w-3.5 h-3.5 shrink-0" />
+          <span>Prev</span>
         </button>
 
-        {/* Voice Button in the same row */}
+        {/* Voice Button in the same row - strictly whitespace-nowrap */}
         <button
           onClick={handleMicToggle}
           disabled={isProcessing}
-          className={`flex items-center gap-1.5 px-3 py-1.5 text-xs font-mono border transition ${
+          className={`flex items-center gap-1.5 px-2.5 sm:px-3 py-1.5 text-xs font-mono border transition whitespace-nowrap shrink-0 ${
             isListening
               ? "bg-zinc-950 text-white border-zinc-950 animate-pulse"
               : "bg-white border-zinc-300 hover:border-zinc-950 text-zinc-800"
@@ -228,38 +228,40 @@ export function QuestionCard() {
         >
           {isProcessing ? (
             <>
-              <Loader2 className="w-3.5 h-3.5 animate-spin" />
-              <span>Analyzing...</span>
+              <Loader2 className="w-3.5 h-3.5 animate-spin shrink-0" />
+              <span className="whitespace-nowrap">Analyzing...</span>
             </>
           ) : isListening ? (
             <>
-              <MicOff className="w-3.5 h-3.5" />
-              <span>Stop</span>
+              <MicOff className="w-3.5 h-3.5 shrink-0" />
+              <span className="whitespace-nowrap">Stop</span>
             </>
           ) : (
             <>
-              <Mic className="w-3.5 h-3.5" />
-              <span>Speak Answer</span>
+              <Mic className="w-3.5 h-3.5 shrink-0" />
+              <span className="whitespace-nowrap">
+                Speak <span className="hidden sm:inline">Answer</span>
+              </span>
             </>
           )}
         </button>
 
-        <div>
+        <div className="shrink-0">
           {activeQuestionIndex < 16 ? (
             <button
               onClick={nextStep}
-              className="flex items-center gap-1.5 text-xs font-semibold px-4 py-1.5 bg-zinc-950 hover:bg-zinc-800 text-white transition"
+              className="flex items-center gap-1 text-xs font-semibold px-3 sm:px-4 py-1.5 bg-zinc-950 hover:bg-zinc-800 text-white transition whitespace-nowrap shrink-0"
             >
               <span>Next</span>
-              <ArrowRight className="w-3.5 h-3.5" />
+              <ArrowRight className="w-3.5 h-3.5 shrink-0" />
             </button>
           ) : (
             <button
               onClick={() => setViewMode("doctor_summary")}
-              className="flex items-center gap-1.5 text-xs font-semibold px-4 py-1.5 bg-zinc-950 hover:bg-zinc-800 text-white transition"
+              className="flex items-center gap-1 text-xs font-semibold px-2.5 sm:px-3 py-1.5 bg-zinc-950 hover:bg-zinc-800 text-white transition whitespace-nowrap shrink-0"
             >
-              <span>View Doctor Summary</span>
-              <ArrowRight className="w-3.5 h-3.5" />
+              <span>Summary</span>
+              <ArrowRight className="w-3.5 h-3.5 shrink-0" />
             </button>
           )}
         </div>
@@ -840,9 +842,9 @@ function renderQuestionContent(
                 {usage.used && (
                   <div className="mt-3 pt-3 border-t border-zinc-200 space-y-2 text-xs">
                     {/* Duration */}
-                    <div className="flex items-center justify-between gap-2">
+                    <div className="flex items-center justify-between gap-1.5 flex-wrap">
                       <span className="text-zinc-500 font-mono text-[11px]">Duration:</span>
-                      <div className="flex gap-1">
+                      <div className="flex gap-1 flex-wrap">
                         {(["<3mo", "3-6mo", ">6mo"] as const).map((d) => (
                           <button
                             key={d}
@@ -860,9 +862,9 @@ function renderQuestionContent(
                     </div>
 
                     {/* Helped */}
-                    <div className="flex items-center justify-between gap-2">
+                    <div className="flex items-center justify-between gap-1.5 flex-wrap">
                       <span className="text-zinc-500 font-mono text-[11px]">Helped:</span>
-                      <div className="flex gap-1">
+                      <div className="flex gap-1 flex-wrap">
                         <button
                           onClick={() => updateProduct(key, { helped: "yes" })}
                           className={`px-2 py-0.5 text-xs font-mono border ${
@@ -883,9 +885,9 @@ function renderQuestionContent(
                     </div>
 
                     {/* Side effects */}
-                    <div className="flex items-center justify-between gap-2">
+                    <div className="flex items-center justify-between gap-1.5 flex-wrap">
                       <span className="text-zinc-500 font-mono text-[11px]">Side effects:</span>
-                      <div className="flex gap-1">
+                      <div className="flex gap-1 flex-wrap">
                         <button
                           onClick={() => updateProduct(key, { side_effects: "yes" })}
                           className={`px-2 py-0.5 text-xs font-mono border ${
@@ -942,9 +944,9 @@ function renderQuestionContent(
 
                 {usage.done && (
                   <div className="mt-3 pt-3 border-t border-zinc-200 space-y-2 text-xs">
-                    <div className="flex items-center justify-between gap-2">
+                    <div className="flex items-center justify-between gap-1.5 flex-wrap">
                       <span className="text-zinc-500 font-mono text-[11px]">Sessions:</span>
-                      <div className="flex gap-1">
+                      <div className="flex gap-1 flex-wrap">
                         {(["1-3", "4-6", ">6"] as const).map((s) => (
                           <button
                             key={s}
@@ -961,9 +963,9 @@ function renderQuestionContent(
                       </div>
                     </div>
 
-                    <div className="flex items-center justify-between gap-2">
+                    <div className="flex items-center justify-between gap-1.5 flex-wrap">
                       <span className="text-zinc-500 font-mono text-[11px]">Helped:</span>
-                      <div className="flex gap-1">
+                      <div className="flex gap-1 flex-wrap">
                         <button
                           onClick={() => updateProcedure(proc, { helped: "yes" })}
                           className={`px-2 py-0.5 text-xs font-mono border ${

@@ -21,7 +21,7 @@ export default function Home() {
       ) : (
         <main className="flex-1 flex flex-col justify-center">
           {/* Active Question Card */}
-          <div className="max-w-2xl w-full mx-auto px-4 py-6 sm:py-10">
+          <div className="max-w-2xl w-full mx-auto px-2 sm:px-4 py-3 sm:py-8">
             <QuestionCard />
           </div>
         </main>
@@ -30,10 +30,10 @@ export default function Home() {
       <PrescriptionUploadModal />
 
       {/* Minimal Footer */}
-      <footer className="border-t border-zinc-200 py-3 px-4 text-[11px] font-mono text-zinc-400 mt-auto">
-        <div className="max-w-2xl mx-auto flex items-center justify-between">
+      <footer className="border-t border-zinc-200 py-2.5 px-3 sm:px-4 text-[10px] sm:text-[11px] font-mono text-zinc-400 mt-auto">
+        <div className="max-w-2xl mx-auto flex items-center justify-between gap-2">
           <span>GenoRoot · Intake Engine</span>
-          <span>16 Questions · Voice & Direct Tap</span>
+          <span>16 Questions · Voice & Tap</span>
         </div>
       </footer>
     </div>

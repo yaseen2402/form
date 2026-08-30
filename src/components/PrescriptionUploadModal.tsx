@@ -99,7 +99,7 @@ export function PrescriptionUploadModal() {
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-xs">
-      <div className="bg-white border border-zinc-300 max-w-md w-full p-6 relative max-h-[90vh] overflow-y-auto">
+      <div className="bg-white border border-zinc-300 max-w-md w-full p-4 sm:p-6 relative max-h-[90vh] overflow-y-auto">
         <button
           onClick={() => setPrescriptionModalOpen(false)}
           className="absolute top-4 right-4 p-1 text-zinc-400 hover:text-zinc-950 transition"

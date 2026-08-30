@@ -331,37 +331,39 @@ export function DoctorSummaryPage() {
               <span className="text-[10px] font-mono uppercase tracking-widest text-zinc-400 block mb-2">
                 D · Treatment History Table
               </span>
-              <table className="w-full text-xs text-left border-collapse border border-zinc-200">
-                <thead>
-                  <tr className="bg-zinc-50 border-b border-zinc-200 font-mono text-[11px] text-zinc-500">
-                    <th className="p-2 border-r border-zinc-200">Item</th>
-                    <th className="p-2 border-r border-zinc-200">Used</th>
-                    <th className="p-2 border-r border-zinc-200">Duration / Sessions</th>
-                    <th className="p-2 border-r border-zinc-200">Helped</th>
-                    <th className="p-2">Side Effect</th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-zinc-200 font-mono text-[11px]">
-                  {Object.entries(formData.products).map(([name, u]) => (
-                    <tr key={name}>
-                      <td className="p-2 font-sans font-medium text-zinc-900 border-r border-zinc-200">{name}</td>
-                      <td className="p-2 border-r border-zinc-200">{u.used ? "Yes" : "No"}</td>
-                      <td className="p-2 border-r border-zinc-200">{u.duration || "—"}</td>
-                      <td className="p-2 border-r border-zinc-200">{u.helped || "—"}</td>
-                      <td className="p-2">{u.side_effects || "—"}</td>
+              <div className="overflow-x-auto">
+                <table className="w-full text-xs text-left border-collapse border border-zinc-200 min-w-[460px]">
+                  <thead>
+                    <tr className="bg-zinc-50 border-b border-zinc-200 font-mono text-[11px] text-zinc-500">
+                      <th className="p-2 border-r border-zinc-200">Item</th>
+                      <th className="p-2 border-r border-zinc-200">Used</th>
+                      <th className="p-2 border-r border-zinc-200">Duration / Sessions</th>
+                      <th className="p-2 border-r border-zinc-200">Helped</th>
+                      <th className="p-2">Side Effect</th>
                     </tr>
-                  ))}
-                  {Object.entries(formData.procedures).map(([name, u]) => (
-                    <tr key={name}>
-                      <td className="p-2 font-sans font-medium text-zinc-900 border-r border-zinc-200">{name}</td>
-                      <td className="p-2 border-r border-zinc-200">{u.done ? "Yes" : "No"}</td>
-                      <td className="p-2 border-r border-zinc-200">{u.sessions || "—"}</td>
-                      <td className="p-2 border-r border-zinc-200">{u.helped || "—"}</td>
-                      <td className="p-2">—</td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
+                  </thead>
+                  <tbody className="divide-y divide-zinc-200 font-mono text-[11px]">
+                    {Object.entries(formData.products).map(([name, u]) => (
+                      <tr key={name}>
+                        <td className="p-2 font-sans font-medium text-zinc-900 border-r border-zinc-200">{name}</td>
+                        <td className="p-2 border-r border-zinc-200">{u.used ? "Yes" : "No"}</td>
+                        <td className="p-2 border-r border-zinc-200">{u.duration || "—"}</td>
+                        <td className="p-2 border-r border-zinc-200">{u.helped || "—"}</td>
+                        <td className="p-2">{u.side_effects || "—"}</td>
+                      </tr>
+                    ))}
+                    {Object.entries(formData.procedures).map(([name, u]) => (
+                      <tr key={name}>
+                        <td className="p-2 font-sans font-medium text-zinc-900 border-r border-zinc-200">{name}</td>
+                        <td className="p-2 border-r border-zinc-200">{u.done ? "Yes" : "No"}</td>
+                        <td className="p-2 border-r border-zinc-200">{u.sessions || "—"}</td>
+                        <td className="p-2 border-r border-zinc-200">{u.helped || "—"}</td>
+                        <td className="p-2">—</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
             </div>
           </div>
         </div>
