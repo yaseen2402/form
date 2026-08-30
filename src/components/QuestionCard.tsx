@@ -19,7 +19,8 @@ import {
   ProductUsage,
   ProcedureUsage,
 } from "@/types/intake";
-import { Check, ArrowRight, ArrowLeft } from "lucide-react";
+import { Check, ArrowRight, ArrowLeft, Mic, MicOff, Loader2 } from "lucide-react";
+import { useVoiceAssistant } from "@/hooks/useVoiceAssistant";
 
 export function QuestionCard() {
   const {
@@ -33,7 +34,24 @@ export function QuestionCard() {
     nextStep,
     prevStep,
     setViewMode,
+    isListening,
+    isProcessing,
+    liveTranscript,
+    recentFieldUpdates,
   } = useIntake();
+
+  const { startListening, stopListening, processTranscript } = useVoiceAssistant();
+
+  const handleMicToggle = () => {
+    if (isListening) {
+      stopListening();
+      if (liveTranscript) {
+        processTranscript(liveTranscript);
+      }
+    } else {
+      startListening();
+    }
+  };
 
   // Intro / Demographics Screen (Index 0)
   if (activeQuestionIndex === 0) {
@@ -47,7 +65,7 @@ export function QuestionCard() {
           Patient Intake Assessment
         </h1>
         <p className="text-xs sm:text-sm text-zinc-500 mb-6 leading-relaxed">
-          Fill your hair & scalp clinical background. You can speak naturally via the microphone above or tap the options below.
+          Provide your hair & scalp clinical background. Tap the &ldquo;Speak Answer&rdquo; button on any question to answer by voice (English or Hinglish), or tap options directly.
         </p>
 
         <div className="space-y-4">
@@ -155,12 +173,40 @@ export function QuestionCard() {
       </p>
 
       {/* Question Options dispatcher */}
-      <div className="mb-8">
+      <div className="mb-6">
         {renderQuestionContent(meta.n, formData, updateField, updateHabit, updateProduct, updateProcedure)}
       </div>
 
-      {/* Navigation Footer */}
-      <div className="flex items-center justify-between pt-4 border-t border-zinc-100">
+      {/* Inline Live Voice Feedback (visible only when active) */}
+      {(isListening || isProcessing || liveTranscript) && (
+        <div className="mb-4 p-2.5 bg-zinc-50 border border-zinc-200 text-xs font-mono flex items-center justify-between text-zinc-900">
+          <div className="flex items-center gap-2">
+            <span className={`w-1.5 h-1.5 rounded-full ${isListening ? "bg-zinc-950 animate-ping" : "bg-zinc-400"}`} />
+            <span>{liveTranscript || (isProcessing ? "Analyzing clinical cues with Gemini..." : "Listening (English / Hinglish)...")}</span>
+          </div>
+          {isListening && liveTranscript && (
+            <button
+              onClick={() => {
+                stopListening();
+                processTranscript(liveTranscript);
+              }}
+              className="text-[10px] font-mono px-2 py-0.5 bg-zinc-950 text-white"
+            >
+              Done
+            </button>
+          )}
+        </div>
+      )}
+
+      {recentFieldUpdates.length > 0 && (
+        <div className="mb-4 p-2 bg-zinc-100 border border-zinc-300 text-xs font-mono text-zinc-950 flex items-center gap-2">
+          <Check className="w-3.5 h-3.5 shrink-0" />
+          <span>Captured: {recentFieldUpdates.join(", ")}</span>
+        </div>
+      )}
+
+      {/* Navigation Footer with Voice Button in the same row */}
+      <div className="flex items-center justify-between pt-4 border-t border-zinc-100 gap-2">
         <button
           onClick={prevStep}
           className="flex items-center gap-1 text-xs font-mono text-zinc-500 hover:text-zinc-950 px-2 py-1.5 transition"
@@ -169,11 +215,40 @@ export function QuestionCard() {
           <span>Previous</span>
         </button>
 
+        {/* Voice Button in the same row */}
+        <button
+          onClick={handleMicToggle}
+          disabled={isProcessing}
+          className={`flex items-center gap-1.5 px-3 py-1.5 text-xs font-mono border transition ${
+            isListening
+              ? "bg-zinc-950 text-white border-zinc-950 animate-pulse"
+              : "bg-white border-zinc-300 hover:border-zinc-950 text-zinc-800"
+          }`}
+          title="Speak your answer in English or Hinglish"
+        >
+          {isProcessing ? (
+            <>
+              <Loader2 className="w-3.5 h-3.5 animate-spin" />
+              <span>Analyzing...</span>
+            </>
+          ) : isListening ? (
+            <>
+              <MicOff className="w-3.5 h-3.5" />
+              <span>Stop</span>
+            </>
+          ) : (
+            <>
+              <Mic className="w-3.5 h-3.5" />
+              <span>Speak Answer</span>
+            </>
+          )}
+        </button>
+
         <div>
           {activeQuestionIndex < 16 ? (
             <button
               onClick={nextStep}
-              className="flex items-center gap-1.5 text-xs font-semibold px-4 py-2 bg-zinc-950 hover:bg-zinc-800 text-white transition"
+              className="flex items-center gap-1.5 text-xs font-semibold px-4 py-1.5 bg-zinc-950 hover:bg-zinc-800 text-white transition"
             >
               <span>Next</span>
               <ArrowRight className="w-3.5 h-3.5" />
@@ -181,7 +256,7 @@ export function QuestionCard() {
           ) : (
             <button
               onClick={() => setViewMode("doctor_summary")}
-              className="flex items-center gap-1.5 text-xs font-semibold px-4 py-2 bg-zinc-950 hover:bg-zinc-800 text-white transition"
+              className="flex items-center gap-1.5 text-xs font-semibold px-4 py-1.5 bg-zinc-950 hover:bg-zinc-800 text-white transition"
             >
               <span>View Doctor Summary</span>
               <ArrowRight className="w-3.5 h-3.5" />
