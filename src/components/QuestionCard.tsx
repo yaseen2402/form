@@ -21,6 +21,7 @@ import {
 } from "@/types/intake";
 import { Check, ArrowRight, ArrowLeft, Mic, MicOff, Loader2 } from "lucide-react";
 import { useVoiceAssistant } from "@/hooks/useVoiceAssistant";
+import { useAutoFormFiller } from "@/hooks/useAutoFormFiller";
 
 export function QuestionCard() {
   const {
@@ -34,20 +35,17 @@ export function QuestionCard() {
     nextStep,
     prevStep,
     setViewMode,
-    isListening,
-    isProcessing,
     liveTranscript,
     recentFieldUpdates,
   } = useIntake();
 
-  const { startListening, stopListening, processTranscript } = useVoiceAssistant();
+  const { startListening, stopListening, isListening } = useVoiceAssistant();
+  const { isFormFillerActive, flushRemaining } = useAutoFormFiller();
 
   const handleMicToggle = () => {
     if (isListening) {
       stopListening();
-      if (liveTranscript) {
-        processTranscript(liveTranscript);
-      }
+      flushRemaining();
     } else {
       startListening();
     }
@@ -202,13 +200,23 @@ export function QuestionCard() {
         {renderQuestionContent(meta.n, formData, updateField, updateHabit, updateProduct, updateProcedure)}
       </div>
 
-      {/* Inline Live Voice Feedback (visible only when active) */}
-      {(isListening || isProcessing || liveTranscript) && (
+      {/* Inline Live Voice & Intelligent Form Filler Status */}
+      {(isListening || liveTranscript || isFormFillerActive) && (
         <div className="mb-4 p-2.5 bg-zinc-50 border border-zinc-200 text-xs font-mono flex items-center justify-between text-zinc-900">
           <div className="flex items-center gap-2 overflow-hidden">
-            <span className={`w-2 h-2 rounded-full shrink-0 ${isListening ? "bg-zinc-950 animate-ping" : "bg-zinc-400"}`} />
+            <span
+              className={`w-2 h-2 rounded-full shrink-0 ${
+                isFormFillerActive
+                  ? "bg-zinc-950 animate-bounce"
+                  : isListening
+                  ? "bg-zinc-950 animate-ping"
+                  : "bg-zinc-400"
+              }`}
+            />
             <span className="truncate">
-              {liveTranscript || (isProcessing ? "Auto-filling fields..." : "Continuous Voice active · speak answers freely")}
+              {isFormFillerActive
+                ? "AI Form Filler evaluating clinical fields..."
+                : liveTranscript || "Mic live · Speak answers in any order"}
             </span>
           </div>
           {isListening && (
@@ -226,7 +234,7 @@ export function QuestionCard() {
       {recentFieldUpdates.length > 0 && (
         <div className="mb-4 p-2 bg-zinc-100 border border-zinc-300 text-xs font-mono text-zinc-950 flex items-center gap-2">
           <Check className="w-3.5 h-3.5 shrink-0 text-zinc-950" />
-          <span>Captured: {recentFieldUpdates.join(", ")}</span>
+          <span>Filled: {recentFieldUpdates.join(", ")}</span>
         </div>
       )}
 
@@ -243,31 +251,30 @@ export function QuestionCard() {
         {/* Continuous Hands-Free Voice Button */}
         <button
           onClick={handleMicToggle}
-          disabled={isProcessing}
           className={`flex items-center gap-1.5 px-2.5 sm:px-3 py-1.5 text-xs font-mono border transition whitespace-nowrap shrink-0 ${
             isListening
               ? "bg-zinc-950 text-white border-zinc-950 animate-pulse"
               : "bg-white border-zinc-300 hover:border-zinc-950 text-zinc-800"
           }`}
-          title={isListening ? "Continuous listening is active. Tap to stop." : "Tap once to speak answers continuously"}
+          title={isListening ? "Microphone is streaming speech. Tap to stop." : "Tap once to speak answers"}
         >
-          {isProcessing ? (
+          {isFormFillerActive ? (
             <>
               <Loader2 className="w-3.5 h-3.5 animate-spin shrink-0" />
-              <span className="whitespace-nowrap">Filling...</span>
+              <span className="whitespace-nowrap">AI Filling...</span>
             </>
           ) : isListening ? (
             <>
               <MicOff className="w-3.5 h-3.5 shrink-0" />
               <span className="whitespace-nowrap font-medium">
-                Listening <span className="hidden sm:inline">(Live)</span>
+                Mic Live <span className="hidden sm:inline">(Listening)</span>
               </span>
             </>
           ) : (
             <>
               <Mic className="w-3.5 h-3.5 shrink-0" />
               <span className="whitespace-nowrap">
-                Speak <span className="hidden sm:inline">Answers</span>
+                Start <span className="hidden sm:inline">Voice</span>
               </span>
             </>
           )}

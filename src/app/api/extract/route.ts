@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { GoogleGenAI } from "@google/genai";
 import { IntakeFormData, HabitsData, ProductRowKey, ProductUsage } from "@/types/intake";
 
-// In-depth heuristic extractor fallback for when no GEMINI_API_KEY is configured
+// Heuristic extractor fallback when no GEMINI_API_KEY is configured
 function heuristicExtractor(text: string, currentData: Partial<IntakeFormData> = {}): {
   extractedFields: Partial<IntakeFormData>;
   fieldsUpdated: string[];
@@ -16,7 +16,7 @@ function heuristicExtractor(text: string, currentData: Partial<IntakeFormData> =
   // Age extraction
   const ageMatch = lower.match(/(?:i am|i'm|age is|umar|saal ka|saal ki)\s*(\d{1,2})/i) ||
                    lower.match(/(\d{1,2})\s*(?:years old|saal)/i);
-  if (ageMatch) {
+  if (ageMatch && !currentData.patient_age) {
     const age = parseInt(ageMatch[1], 10);
     if (age >= 10 && age <= 99) {
       delta.patient_age = age;
@@ -24,28 +24,51 @@ function heuristicExtractor(text: string, currentData: Partial<IntakeFormData> =
     }
   }
 
+  // Name extraction
+  const nameMatch = lower.match(/(?:my name is|mera naam|i am|this is)\s+([a-z]+(?:\s+[a-z]+)?)/i);
+  if (nameMatch && !currentData.patient_name) {
+    const candidate = nameMatch[1].trim();
+    if (!["a", "the", "suffering", "having", "experiencing", "facing"].includes(candidate.toLowerCase())) {
+      delta.patient_name = candidate.charAt(0).toUpperCase() + candidate.slice(1);
+      updated.push("Patient Name");
+    }
+  }
+
+  // Sex extraction
+  if (!currentData.patient_sex) {
+    if (lower.includes("female") || lower.includes("woman") || lower.includes("ladki") || lower.includes("aurat") || lower.includes("karti hoon")) {
+      delta.patient_sex = "female";
+      updated.push("Patient Sex: Female");
+    } else if (lower.includes("male") || lower.includes("man") || lower.includes("ladka") || lower.includes("aadmi") || lower.includes("karta hoon")) {
+      delta.patient_sex = "male";
+      updated.push("Patient Sex: Male");
+    }
+  }
+
   // Age hair loss began
   const beganMatch = lower.match(/(?:started at|began at|shuru hua|noticed at)\s*(\d{1,2})/i) ||
                      lower.match(/(\d{1,2})\s*(?:ki umar|saal me shuru)/i);
-  if (beganMatch) {
+  if (beganMatch && !currentData.age_hair_loss_began) {
     delta.age_hair_loss_began = parseInt(beganMatch[1], 10);
     updated.push("Age Hair Loss Began (Q1)");
   }
 
   // Duration
-  if (lower.includes("less than 6 month") || lower.includes("under 6 month") || lower.includes("kuch mahine") || lower.includes("few months") || lower.includes("2-3 months") || lower.includes("3-4 months")) {
-    delta.duration = "Less than 6 months";
-    updated.push("Duration (Q2)");
-  } else if (lower.includes("6-12 month") || lower.includes("6 to 12") || lower.includes("saal bhar se kam") || lower.includes("ek saal se")) {
-    delta.duration = "6-12 months";
-    updated.push("Duration (Q2)");
-  } else if (lower.includes("over a year") || lower.includes("more than a year") || lower.includes("do saal") || lower.includes("2 year") || lower.includes("3 year") || lower.includes("many years") || lower.includes("kaafi saal")) {
-    delta.duration = "Over a year";
-    updated.push("Duration (Q2)");
+  if (!currentData.duration) {
+    if (lower.includes("less than 6 month") || lower.includes("under 6 month") || lower.includes("kuch mahine") || lower.includes("few months") || lower.includes("2-3 months") || lower.includes("3-4 months")) {
+      delta.duration = "Less than 6 months";
+      updated.push("Duration: <6mo (Q2)");
+    } else if (lower.includes("6-12 month") || lower.includes("6 to 12") || lower.includes("saal bhar se kam") || lower.includes("ek saal se")) {
+      delta.duration = "6-12 months";
+      updated.push("Duration: 6-12mo (Q2)");
+    } else if (lower.includes("over a year") || lower.includes("more than a year") || lower.includes("do saal") || lower.includes("2 year") || lower.includes("3 year") || lower.includes("many years") || lower.includes("kaafi saal")) {
+      delta.duration = "Over a year";
+      updated.push("Duration: >1yr (Q2)");
+    }
   }
 
   // Family history
-  const fam: ("Father had hair loss" | "Mother had hair loss" | "Siblings with thinning or baldness" | "No known family history")[] = [...(currentData.family_history || [])];
+  const fam = [...(currentData.family_history || [])];
   if (lower.includes("father") || lower.includes("papa") || lower.includes("dad") || lower.includes("pitaji")) {
     if (!fam.includes("Father had hair loss")) fam.push("Father had hair loss");
     updated.push("Family History: Father (Q3)");
@@ -61,7 +84,7 @@ function heuristicExtractor(text: string, currentData: Partial<IntakeFormData> =
   if (lower.includes("no family history") || lower.includes("kisi ko nahi") || lower.includes("no one in family")) {
     delta.family_history = ["No known family history"];
     updated.push("Family History: None (Q3)");
-  } else if (fam.length > 0) {
+  } else if (fam.length > (currentData.family_history?.length || 0)) {
     delta.family_history = fam;
   }
 
@@ -91,164 +114,192 @@ function heuristicExtractor(text: string, currentData: Partial<IntakeFormData> =
     if (!pat.includes("Sudden excessive shedding")) pat.push("Sudden excessive shedding");
     updated.push("Pattern: Sudden excessive shedding (Q4)");
   }
-  if (pat.length > 0) delta.pattern = pat;
+  if (pat.length > (currentData.pattern?.length || 0)) delta.pattern = pat;
 
   // Conditions
   const cond = [...(currentData.diagnosed_conditions || [])];
   if (lower.includes("pcos") || lower.includes("pcod")) {
     if (!cond.includes("PCOS/PCOD")) cond.push("PCOS/PCOD");
     delta.patient_sex = "female";
-    updated.push("Condition: PCOS/PCOD (Q5)");
+    updated.push("Conditions: PCOS/PCOD (Q5)");
   }
   if (lower.includes("thyroid") || lower.includes("hypothyroid") || lower.includes("hyperthyroid")) {
     if (!cond.includes("Thyroid disorder")) cond.push("Thyroid disorder");
-    updated.push("Condition: Thyroid disorder (Q5)");
+    updated.push("Conditions: Thyroid (Q5)");
   }
-  if (lower.includes("diabetes") || lower.includes("sugar")) {
+  if (lower.includes("diabetes") || lower.includes("sugar") || lower.includes("diabetic")) {
     if (!cond.includes("Diabetes")) cond.push("Diabetes");
-    updated.push("Condition: Diabetes (Q5)");
+    updated.push("Conditions: Diabetes (Q5)");
   }
-  if (lower.includes("autoimmune") || lower.includes("alopecia areata")) {
-    if (!cond.includes("Autoimmune disease")) cond.push("Autoimmune disease");
-    updated.push("Condition: Autoimmune disease (Q5)");
-  }
-  if (lower.includes("anemia") || lower.includes("low hemoglobin") || lower.includes("iron deficiency") || lower.includes("khoon ki kami")) {
+  if (lower.includes("anemia") || lower.includes("iron deficiency") || lower.includes("low hemoglobin") || lower.includes("ferritin")) {
     if (!cond.includes("Anemia")) cond.push("Anemia");
-    updated.push("Condition: Anemia (Q5)");
+    updated.push("Conditions: Anemia (Q5)");
   }
-  if (cond.length > 0) delta.diagnosed_conditions = cond;
+  if (cond.length > (currentData.diagnosed_conditions?.length || 0)) delta.diagnosed_conditions = cond;
 
-  // Triggers (Q10)
-  const triggers = [...(currentData.past_6_months || [])];
-  if (lower.includes("dengue") || lower.includes("covid") || lower.includes("typhoid") || lower.includes("high fever") || lower.includes("bukhar")) {
-    if (!triggers.includes("Fever with illness (COVID, Dengue, Typhoid)")) {
-      triggers.push("Fever with illness (COVID, Dengue, Typhoid)");
-      // Automatically infer sudden shedding if fever trigger noted!
+  // Past 6 months triggers
+  const trig = [...(currentData.past_6_months || [])];
+  if (lower.includes("covid") || lower.includes("dengue") || lower.includes("typhoid") || lower.includes("fever") || lower.includes("bukhar") || lower.includes("illness")) {
+    if (!trig.includes("Fever with illness (COVID, Dengue, Typhoid)")) {
+      trig.push("Fever with illness (COVID, Dengue, Typhoid)");
+      updated.push("Triggers: Febrile illness (Q10)");
       if (!pat.includes("Sudden excessive shedding")) {
         pat.push("Sudden excessive shedding");
         delta.pattern = pat;
+        updated.push("Inferred: Sudden shedding (Q4)");
       }
     }
-    updated.push("Trigger: Fever with illness (Q10)");
   }
-  if (lower.includes("stress") || lower.includes("trauma") || lower.includes("tension") || lower.includes("depression")) {
-    if (!triggers.includes("High stress or emotional trauma")) triggers.push("High stress or emotional trauma");
-    updated.push("Trigger: High stress (Q10)");
-  }
-  if (lower.includes("diet") || lower.includes("weight loss") || lower.includes("vajan kam")) {
-    if (!triggers.includes("Crash dieting or major weight loss")) triggers.push("Crash dieting or major weight loss");
-    updated.push("Trigger: Weight loss (Q10)");
-  }
-  if (lower.includes("surgery") || lower.includes("operation")) {
-    if (!triggers.includes("Recent surgery")) triggers.push("Recent surgery");
-    updated.push("Trigger: Surgery (Q10)");
-  }
-  if (lower.includes("location") || lower.includes("water quality") || lower.includes("shifted") || lower.includes("bangalore water") || lower.includes("air quality")) {
-    if (!triggers.includes("Change in location/water/air quality")) triggers.push("Change in location/water/air quality");
-    updated.push("Trigger: Location/Water change (Q10)");
-  }
-  if (triggers.length > 0) delta.past_6_months = triggers;
-
-  // Habits (Q11)
-  const habits = { ...(currentData.habits || {}) };
-  if (lower.includes("smoke") || lower.includes("cigarette") || lower.includes("beedi")) {
-    habits.smoking = "yes";
-    if (lower.includes("mild") || lower.includes("less than 5") || lower.includes("under 5") || lower.includes("2-3")) {
-      habits.smoking_severity = "Mild <5/day";
-    } else if (lower.includes("moderate") || lower.includes("5-10") || lower.includes("pack")) {
-      habits.smoking_severity = "Moderate 5-10/day";
-    } else if (lower.includes("severe") || lower.includes("more than 10") || lower.includes("heavy")) {
-      habits.smoking_severity = "Severe >10/day";
+  if (lower.includes("stress") || lower.includes("trauma") || lower.includes("work pressure") || lower.includes("family tension")) {
+    if (!trig.includes("High stress or emotional trauma")) {
+      trig.push("High stress or emotional trauma");
+      updated.push("Triggers: High stress (Q10)");
     }
-    updated.push("Habits: Smoking (Q11)");
   }
-  if (lower.includes("hard water") || lower.includes("borewell")) {
-    habits.hard_water = "yes";
+  if (lower.includes("diet") || lower.includes("weight loss") || lower.includes("keto") || lower.includes("fasting")) {
+    if (!trig.includes("Crash dieting or major weight loss")) {
+      trig.push("Crash dieting or major weight loss");
+      updated.push("Triggers: Weight loss / dieting (Q10)");
+    }
+  }
+  if (trig.length > (currentData.past_6_months?.length || 0)) delta.past_6_months = trig;
+
+  // Habits
+  const currentHabits = currentData.habits || {
+    smoking: null,
+    smoking_severity: null,
+    alcohol: null,
+    hard_water: null,
+    hair_wash_frequency: null,
+    heating_tools_styling_chemicals: null,
+    salon_treatments: null,
+    salon_treatment_detail: null,
+  };
+  const habitsPatch: HabitsData = { ...currentHabits };
+  let habitsChanged = false;
+
+  if (lower.includes("hard water") || lower.includes("borewell") || lower.includes("khara paani")) {
+    habitsPatch.hard_water = "yes";
+    habitsChanged = true;
     updated.push("Habits: Hard water (Q11)");
   }
-  if (lower.includes("daily wash") || lower.includes("everyday") || lower.includes("roz")) {
-    habits.hair_wash_frequency = "Daily";
-    updated.push("Habits: Wash Daily (Q11)");
-  } else if (lower.includes("alternate") || lower.includes("ek din chhod ke") || lower.includes("alternate days")) {
-    habits.hair_wash_frequency = "Alternate Days";
-    updated.push("Habits: Wash Alternate Days (Q11)");
-  } else if (lower.includes("weekly") || lower.includes("hafte me ek") || lower.includes("once a week")) {
-    habits.hair_wash_frequency = "Weekly";
-    updated.push("Habits: Wash Weekly (Q11)");
+  if (lower.includes("smoke") || lower.includes("cigarette") || lower.includes("bidi")) {
+    if (lower.includes("don't smoke") || lower.includes("no smoke") || lower.includes("never smoked")) {
+      habitsPatch.smoking = "no";
+      habitsChanged = true;
+      updated.push("Habits: No smoking (Q11)");
+    } else {
+      habitsPatch.smoking = "yes";
+      habitsChanged = true;
+      if (lower.includes("more than 10") || lower.includes("pack a day") || lower.includes("heavy")) {
+        habitsPatch.smoking_severity = "Severe >10/day";
+      } else if (lower.includes("5") || lower.includes("moderate") || lower.includes("5-10")) {
+        habitsPatch.smoking_severity = "Moderate 5-10/day";
+      } else {
+        habitsPatch.smoking_severity = "Mild <5/day";
+      }
+      updated.push("Habits: Smoking (Q11)");
+    }
   }
-  delta.habits = habits as HabitsData;
+  if (lower.includes("daily wash") || lower.includes("har roz wash") || lower.includes("every day")) {
+    habitsPatch.hair_wash_frequency = "Daily";
+    habitsChanged = true;
+    updated.push("Habits: Daily wash (Q11)");
+  } else if (lower.includes("alternate") || lower.includes("ek din chhod kar") || lower.includes("2-3 times a week")) {
+    habitsPatch.hair_wash_frequency = "Alternate Days";
+    habitsChanged = true;
+    updated.push("Habits: Alternate wash (Q11)");
+  } else if (lower.includes("weekly") || lower.includes("once a week") || lower.includes("hafte me ek baar")) {
+    habitsPatch.hair_wash_frequency = "Weekly";
+    habitsChanged = true;
+    updated.push("Habits: Weekly wash (Q11)");
+  }
 
-  // Products (Q12)
-  const products = { ...(currentData.products || {}) };
-  if (lower.includes("minoxidil") || lower.includes("mintop") || lower.includes("morr") || lower.includes("tugain")) {
-    products["Topical Minoxidil"] = {
+  if (habitsChanged) delta.habits = habitsPatch;
+
+  // Products
+  const currentProds = currentData.products || {
+    "OTC/Medicated Shampoos": { used: false, duration: null, helped: null, side_effects: null },
+    "Hair Oils/Serums": { used: false, duration: null, helped: null, side_effects: null },
+    "Topical Minoxidil": { used: false, duration: null, helped: null, side_effects: null },
+    "Oral Minoxidil": { used: false, duration: null, helped: null, side_effects: null },
+    "Supplements": { used: false, duration: null, helped: null, side_effects: null },
+  };
+  const prodsPatch = { ...currentProds };
+  let prodsChanged = false;
+
+  if (lower.includes("minoxidil") || lower.includes("tugain") || lower.includes("morr f") || lower.includes("mintop")) {
+    const isOral = lower.includes("oral") || lower.includes("tablet") || lower.includes("pill");
+    const key: ProductRowKey = isOral ? "Oral Minoxidil" : "Topical Minoxidil";
+    const existing = prodsPatch[key] || { used: false, duration: null, helped: null, side_effects: null };
+    prodsPatch[key] = {
+      ...existing,
       used: true,
-      duration: lower.includes(">6") || lower.includes("over 6") || lower.includes("saal") ? ">6mo" : "3-6mo",
-      helped: lower.includes("helped") || lower.includes("result accha") || lower.includes("fayda") ? "yes" : "no",
-      side_effects: lower.includes("itch") || lower.includes("rash") || lower.includes("allergy") ? "yes" : "no",
+      duration: lower.includes("more than 6") || lower.includes("over 6") ? ">6mo" : lower.includes("3") ? "3-6mo" : "<3mo",
+      helped: lower.includes("helped") || lower.includes("improvement") || lower.includes("fayda") ? "yes" : lower.includes("no effect") || lower.includes("did not help") ? "no" : existing.helped,
     };
-    updated.push("Products: Topical Minoxidil (Q12)");
+    prodsChanged = true;
+    updated.push(`Products: ${key} (Q12)`);
   }
-  if (lower.includes("biotin") || lower.includes("supplement") || lower.includes("vitamin") || lower.includes("follihair")) {
-    products["Supplements"] = {
-      used: true,
-      duration: "3-6mo",
-      helped: "yes",
-      side_effects: "no",
-    };
+  if (lower.includes("biotin") || lower.includes("multivitamin") || lower.includes("follihair") || lower.includes("supplement")) {
+    const existing = prodsPatch["Supplements"] || { used: false, duration: null, helped: null, side_effects: null };
+    prodsPatch["Supplements"] = { ...existing, used: true, duration: "3-6mo", helped: "yes" };
+    prodsChanged = true;
     updated.push("Products: Supplements (Q12)");
   }
-  if (lower.includes("shampoo") || lower.includes("ketoconazole") || lower.includes("scalpe") || lower.includes("nizoral") || lower.includes("anti dandruff")) {
-    products["OTC/Medicated Shampoos"] = {
-      used: true,
-      duration: ">6mo",
-      helped: "yes",
-      side_effects: "no",
-    };
-    updated.push("Products: Medicated Shampoos (Q12)");
+  if (lower.includes("ketoconazole") || lower.includes("anti-dandruff") || lower.includes("scalpe") || lower.includes("nizral")) {
+    const existing = prodsPatch["OTC/Medicated Shampoos"] || { used: false, duration: null, helped: null, side_effects: null };
+    prodsPatch["OTC/Medicated Shampoos"] = { ...existing, used: true, duration: "<3mo" };
+    prodsChanged = true;
+    updated.push("Products: Medicated Shampoo (Q12)");
   }
-  delta.products = products as Record<ProductRowKey, ProductUsage>;
+  if (prodsChanged) delta.products = prodsPatch;
 
   // Consent & Sample
-  if (lower.includes("consent") || lower.includes("agree") || lower.includes("yes i accept") || lower.includes("haan chalega")) {
-    delta.consent = "yes";
-    updated.push("Consent (Q16)");
-  }
-  if (lower.includes("saliva") || lower.includes("swab")) {
-    delta.sample_type = "Saliva";
-    updated.push("Sample: Saliva (Q15)");
-  } else if (lower.includes("blood") || lower.includes("khoon")) {
-    delta.sample_type = "Blood";
-    updated.push("Sample: Blood (Q15)");
-  } else if (lower.includes("either") || lower.includes("dono chalega") || lower.includes("any")) {
-    delta.sample_type = "Either";
-    updated.push("Sample: Either (Q15)");
+  if (!currentData.sample_type) {
+    if (lower.includes("saliva")) {
+      delta.sample_type = "Saliva";
+      updated.push("Sample: Saliva (Q15)");
+    } else if (lower.includes("blood")) {
+      delta.sample_type = "Blood";
+      updated.push("Sample: Blood (Q15)");
+    } else if (lower.includes("either") || lower.includes("any sample") || lower.includes("both")) {
+      delta.sample_type = "Either";
+      updated.push("Sample: Either (Q15)");
+    }
   }
 
-  // Response generation
-  let doctorVoiceResponse = "Thank you. I have recorded your answers.";
-  if (updated.length > 0) {
-    doctorVoiceResponse = `I noted down ${updated.slice(0, 3).join(", ")}. Let's continue to the next step.`;
+  if (lower.includes("consent") || lower.includes("i agree") || lower.includes("permission") || lower.includes("yes agree")) {
+    delta.consent = "yes";
+    updated.push("Consent: Granted (Q16)");
   }
 
   return {
     extractedFields: delta,
     fieldsUpdated: updated,
-    doctorVoiceResponse,
-    suggestedNextQuestion: Math.min(16, (currentData.age_hair_loss_began ? 3 : 2)),
+    doctorVoiceResponse: updated.length > 0
+      ? `Recorded ${updated.join(", ")}.`
+      : "",
+    suggestedNextQuestion: 1,
   };
 }
 
 export async function POST(req: NextRequest) {
   try {
     const body = await req.json();
-    const { transcript, image, currentFormData, activeQuestionIndex } = body;
+    const {
+      transcript,
+      image,
+      currentFormData,
+      alreadyFilledFields,
+      unfilledFields,
+      activeQuestionIndex,
+    } = body;
 
     const apiKey = process.env.GEMINI_API_KEY;
 
-    // If no API key is provided, use the high-fidelity heuristic parser
+    // If no API key is provided, use the state-aware heuristic parser
     if (!apiKey) {
-      console.log("No GEMINI_API_KEY found. Using smart heuristic clinic parser fallback.");
       const result = heuristicExtractor(transcript || "", currentFormData || {});
       return NextResponse.json(result);
     }
@@ -257,11 +308,11 @@ export async function POST(req: NextRequest) {
     const ai = new GoogleGenAI({ apiKey });
 
     const systemInstruction = `
-You are the AI Clinical Intake Concierge for GenoRoot Hair & Scalp Clinic.
-Your job is to listen to the patient's spoken statements (which may be in English, Hindi, or Hinglish) or read their uploaded medical prescription / lab report, and extract structured answers for the official 16-question clinic intake.
+You are the Intelligent State-Aware Auto Form Filling Engine for GenoRoot Hair & Scalp Clinic.
+Your job is to listen to the patient's continuous speech stream (which may be in English, Hindi, or Hinglish) or read their medical document, and evaluate which fields of the official 16-question intake need to be filled.
 
-Official Intake Schema fields:
-1. age_hair_loss_began (number)
+INTAKE SCHEMA SPECIFICATION:
+1. age_hair_loss_began (number: age when hair loss first started)
 2. duration ("Less than 6 months" | "6-12 months" | "Over a year")
 3. family_history (array of: "Father had hair loss", "Mother had hair loss", "Siblings with thinning or baldness", "No known family history")
 4. pattern (array of: "Receding hairline", "Thinning at crown", "Widening part line", "Diffuse thinning", "Patchy loss", "Sudden excessive shedding")
@@ -276,45 +327,53 @@ Official Intake Schema fields:
     Product names: "OTC/Medicated Shampoos", "Hair Oils/Serums", "Topical Minoxidil", "Oral Minoxidil", "Supplements"
 13. procedures (object mapping procedure to { done: boolean, sessions?: "1-3"|"4-6"|">6", helped?: "yes"|"no" })
     Procedures: "PRP/GFC/iPRF", "Stem Cells/Exosomes", "Hair Transplant", "Other"
-14. past_treatment_side_effects ("yes" | "no", followup detail if yes)
+14. past_treatment_side_effects ("yes" | "no", detail if yes)
 15. sample_type ("Saliva" | "Blood" | "Either")
 16. consent ("yes" | "no")
+Patient Demographics: patient_name (string), patient_sex ("male" | "female" | "other"), patient_age (number)
 
-Patient Demographics:
-patient_name (string), patient_sex ("male" | "female" | "other"), patient_age (number)
+CRITICAL STATE-AWARE DECISION RULES:
+1. INTELLIGENT FILTERING - DO NOT DUMP RAW TEXT:
+   - Carefully evaluate the patient's speech. If they are making casual chatter, conversational filler ("uhh", "let me think", "what was I saying", "yeah okay"), or talking about unrelated topics, DO NOT touch any fields! Return empty extractedFields: {}.
+   - Only populate fields when the patient provides genuine, explicit clinical facts.
+2. FOCUS ON UNFILLED FIELDS:
+   - You are provided with a list of "unfilledFields". Prioritize checking if the speech provides answers for any of these pending questions.
+3. PRESERVE EXISTING FILLED FIELDS:
+   - Do NOT overwrite fields in "alreadyFilledFields" unless the patient explicitly corrects or changes their previous statement (e.g., "actually I started at 45 not 48").
+4. CLINICAL INFERENCES:
+   - COVID, Dengue, Typhoid, or high fever implies BOTH "Fever with illness (COVID, Dengue, Typhoid)" in Q10 AND "Sudden excessive shedding" (Telogen Effluvium) in Q4.
+   - If patient is male, menstrual_cycle and pregnancy_related must be "Not applicable".
+   - If patient mentions PCOS or PCOD, patient_sex is "female".
 
-Inference & Clinic Rules:
-- If patient mentions COVID, Dengue, Typhoid or high fever in the past months, infer both "Fever with illness (COVID, Dengue, Typhoid)" in Q10 AND "Sudden excessive shedding" (Telogen Effluvium) in Q4!
-- If patient is male (e.g. mentions "I am a 50 year old man" or "Mr." or masculine Hindi grammar "karta hoon"), set menstrual_cycle to "Not applicable" and pregnancy_related to "Not applicable".
-- If patient mentions PCOS or PCOD, set patient_sex to "female", and look for signs of adult acne or excess facial hair.
-- For Hinglish:
-  - "aage se baal kam": Receding hairline
-  - "upar se patle ho rahe": Thinning at crown
-  - "maang chaudi ho rahi": Widening part line
-  - "guccha nikal raha hai" / "tezi se jhad rahe": Sudden excessive shedding
-  - "kharab paani / borewell ka paani": hard_water = "yes"
-  - "papa ke baal nahi the": Father had hair loss
-
-Return ONLY a valid JSON object matching this TypeScript structure:
+Return ONLY valid JSON matching this TypeScript structure:
 {
   "extractedFields": Partial<IntakeFormData>,
-  "fieldsUpdated": string[], // names of fields that were updated or inferred
-  "doctorVoiceResponse": string, // warm, empathetic, 1-2 sentence spoken reply to confirm what was recorded and encourage next step
+  "fieldsUpdated": string[], // names of fields that were populated (e.g. ["Patient Age: 52", "Family History: Father"])
+  "doctorVoiceResponse": string, // optional brief confirmation
   "suggestedNextQuestion": number // 1 to 16
 }
 `;
 
     const userPrompt = `
-Current Intake State: ${JSON.stringify(currentFormData || {})}
-Active Question Index: ${activeQuestionIndex || 1}
-Patient Spoken Input / Transcription: "${transcript || ""}"
-${image ? "Patient also provided an image (prescription or lab report)." : ""}
+ALREADY FILLED FIELDS:
+${JSON.stringify(alreadyFilledFields || [], null, 2)}
 
-Analyze the patient's utterance, extract all relevant fields across the 16 questions, apply clinical inferences, and return valid JSON.`;
+UNFILLED FIELDS PENDING ANSWERS:
+${JSON.stringify(unfilledFields || [], null, 2)}
+
+CURRENT FULL FORM DATA:
+${JSON.stringify(currentFormData || {}, null, 2)}
+
+ACTIVE QUESTION BEING VIEWED: ${activeQuestionIndex || 1}
+
+PATIENT SPOKEN SPEECH CHUNK:
+"${transcript || ""}"
+${image ? "\n[A prescription or lab report image is also attached.]" : ""}
+
+Evaluate if the speech chunk provides genuine answers for any unfilled fields (or explicit corrections). Extract and return valid JSON.`;
 
     const contents: Array<Record<string, unknown>> = [];
     if (image) {
-      // Base64 image attachment
       contents.push({
         role: "user",
         parts: [
@@ -340,7 +399,7 @@ Analyze the patient's utterance, extract all relevant fields across the 16 quest
       config: {
         systemInstruction,
         responseMimeType: "application/json",
-        temperature: 0.2,
+        temperature: 0.1,
       },
     });
 
@@ -350,7 +409,6 @@ Analyze the patient's utterance, extract all relevant fields across the 16 quest
     return NextResponse.json(parsed);
   } catch (error: unknown) {
     console.error("Gemini API error in /api/extract:", error);
-    // Fallback gracefully so frontend always gets a valid response
     const errorMessage = error instanceof Error ? error.message : String(error);
     const fallback = heuristicExtractor(errorMessage, {});
     return NextResponse.json(fallback);
