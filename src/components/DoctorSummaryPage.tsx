@@ -118,9 +118,7 @@ export function DoctorSummaryPage() {
       {/* Top Banner */}
       <div className="flex items-center justify-between border-b border-zinc-200 pb-3 mb-6">
         <div>
-          <span className="text-[11px] font-mono uppercase tracking-widest text-zinc-400 block">
-            Clinical Output · Page 02
-          </span>
+
           <h1 className="text-xl sm:text-2xl font-bold tracking-tight text-zinc-950">
             Clinical Summary
           </h1>
