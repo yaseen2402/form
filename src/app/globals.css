@@ -24,3 +24,27 @@ body {
     text-wrap: balance;
   }
 }
+
+/* Modern, minimal scrollbar */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #e4e4e7; /* zinc-200 */
+  border-radius: 8px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #a1a1aa; /* zinc-400 */
+}
+
+/* Prevent layout shift when scrollbar appears */
+html {
+  scrollbar-gutter: stable;
+}
