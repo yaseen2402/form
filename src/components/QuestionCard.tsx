@@ -210,42 +210,60 @@ export function QuestionCard() {
       </AnimatePresence>
 
       {/* Inline Live Voice & Intelligent Form Filler Status */}
-      {(isListening || liveTranscript || isFormFillerActive) && (
-        <div className="mb-4 p-2.5 bg-zinc-50 border border-zinc-200 text-xs font-mono flex items-center justify-between text-zinc-900">
-          <div className="flex items-center gap-2 overflow-hidden">
-            <span
-              className={`w-2 h-2 rounded-full shrink-0 ${
-                isFormFillerActive
-                  ? "bg-zinc-950 animate-bounce"
-                  : isListening
-                  ? "bg-zinc-950 animate-ping"
-                  : "bg-zinc-400"
-              }`}
-            />
-            <span className="truncate">
-              {isFormFillerActive
-                ? "AI Form Filler evaluating clinical fields..."
-                : liveTranscript || "Mic live · Speak answers in any order"}
-            </span>
-          </div>
-          {isListening && (
-            <button
-              onClick={handleMicToggle}
-              className="text-[10px] font-mono px-2 py-0.5 border border-zinc-300 hover:border-zinc-950 text-zinc-700 hover:text-zinc-950 shrink-0 ml-2"
-              title="Stop continuous listening"
-            >
-              Stop
-            </button>
-          )}
-        </div>
-      )}
+      <AnimatePresence>
+        {(isListening || liveTranscript || isFormFillerActive) && (
+          <motion.div
+            initial={{ opacity: 0, height: 0, marginBottom: 0 }}
+            animate={{ opacity: 1, height: "auto", marginBottom: 16 }}
+            exit={{ opacity: 0, height: 0, marginBottom: 0 }}
+            className="overflow-hidden"
+          >
+            <div className="p-2.5 bg-zinc-50 border border-zinc-200 text-xs font-mono flex items-center justify-between text-zinc-900">
+              <div className="flex items-center gap-2 overflow-hidden">
+                <span
+                  className={`w-2 h-2 rounded-full shrink-0 ${
+                    isFormFillerActive
+                      ? "bg-zinc-950 animate-bounce"
+                      : isListening
+                      ? "bg-zinc-950 animate-ping"
+                      : "bg-zinc-400"
+                  }`}
+                />
+                <span className="truncate">
+                  {isFormFillerActive
+                    ? "AI Form Filler evaluating clinical fields..."
+                    : liveTranscript || "Mic live · Speak answers in any order"}
+                </span>
+              </div>
+              {isListening && (
+                <button
+                  onClick={handleMicToggle}
+                  className="text-[10px] font-mono px-2 py-0.5 border border-zinc-300 hover:border-zinc-950 text-zinc-700 hover:text-zinc-950 shrink-0 ml-2"
+                  title="Stop continuous listening"
+                >
+                  Stop
+                </button>
+              )}
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
 
-      {recentFieldUpdates.length > 0 && (
-        <div className="mb-4 p-2 bg-zinc-100 border border-zinc-300 text-xs font-mono text-zinc-950 flex items-center gap-2">
-          <Check className="w-3.5 h-3.5 shrink-0 text-zinc-950" />
-          <span>Filled: {recentFieldUpdates.join(", ")}</span>
-        </div>
-      )}
+      <AnimatePresence>
+        {recentFieldUpdates.length > 0 && (
+          <motion.div
+            initial={{ opacity: 0, height: 0, marginBottom: 0 }}
+            animate={{ opacity: 1, height: "auto", marginBottom: 16 }}
+            exit={{ opacity: 0, height: 0, marginBottom: 0 }}
+            className="overflow-hidden"
+          >
+            <div className="p-2 bg-zinc-100 border border-zinc-300 text-xs font-mono text-zinc-950 flex items-center gap-2">
+              <Check className="w-3.5 h-3.5 shrink-0 text-zinc-950" />
+              <span>Filled: {recentFieldUpdates.join(", ")}</span>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
 
       {/* Navigation Footer with Voice Button in the same row */}
       <div className="flex items-center justify-between pt-4 border-t border-zinc-100 gap-1 sm:gap-2 flex-nowrap">
