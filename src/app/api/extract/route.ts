@@ -393,18 +393,36 @@ Evaluate if the speech chunk provides genuine answers for any unfilled fields (o
       });
     }
 
-    const response = await ai.models.generateContent({
-      model: "gemini-2.5-flash",
-      contents: contents as any,
-      config: {
-        systemInstruction,
-        responseMimeType: "application/json",
-        temperature: 0.1,
-      },
-    });
+    let parsed = null;
+    let attempts = 0;
+    const maxAttempts = 2;
+    let lastError = null;
 
-    const responseText = response.text || "{}";
-    const parsed = JSON.parse(responseText);
+    while (attempts < maxAttempts) {
+      try {
+        const response = await ai.models.generateContent({
+          model: "gemini-2.5-flash",
+          contents: contents as any,
+          config: {
+            systemInstruction,
+            responseMimeType: "application/json",
+            temperature: 0.1,
+          },
+        });
+
+        const responseText = response.text || "{}";
+        parsed = JSON.parse(responseText);
+        break; // Successfully got valid JSON, break out of loop
+      } catch (err) {
+        lastError = err;
+        attempts++;
+        console.warn(`Gemini extraction failed (Attempt ${attempts}/${maxAttempts}). Retrying...`, err);
+      }
+    }
+
+    if (!parsed) {
+      throw lastError || new Error("Failed to extract valid JSON after max retries");
+    }
 
     return NextResponse.json(parsed);
   } catch (error: unknown) {
