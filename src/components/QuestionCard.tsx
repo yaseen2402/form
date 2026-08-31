@@ -22,6 +22,7 @@ import {
 import { Check, ArrowRight, ArrowLeft, Mic, MicOff, Loader2 } from "lucide-react";
 import { useVoiceAssistant } from "@/hooks/useVoiceAssistant";
 import { useAutoFormFiller } from "@/hooks/useAutoFormFiller";
+import { motion, AnimatePresence } from "framer-motion";
 
 export function QuestionCard() {
   const {
@@ -175,24 +176,38 @@ export function QuestionCard() {
   const formattedNum = String(meta.n).padStart(2, "0");
 
   return (
-    <div className="bg-white border border-zinc-200 p-4 sm:p-8 max-w-2xl mx-auto">
+    <motion.div 
+      layout
+      className="bg-white border border-zinc-200 p-4 sm:p-8 max-w-2xl mx-auto overflow-hidden"
+      transition={{ type: "spring", bounce: 0, duration: 0.4 }}
+    >
       {/* Header Info */}
       <div className="flex items-center justify-between text-xs font-mono text-zinc-400 mb-3 border-b border-zinc-100 pb-2">
         <span>Section {meta.sectionId} · {meta.sectionTitle}</span>
         <span className="font-semibold text-zinc-950">{formattedNum} / 16</span>
       </div>
 
-      <h2 className="text-lg sm:text-xl font-bold text-zinc-950 mb-1.5">
-        {meta.title}
-      </h2>
-      <p className="text-xs text-zinc-500 mb-6">
-        {meta.description}
-      </p>
+      <AnimatePresence mode="wait">
+        <motion.div
+          key={activeQuestionIndex}
+          initial={{ opacity: 0, x: 10 }}
+          animate={{ opacity: 1, x: 0 }}
+          exit={{ opacity: 0, x: -10 }}
+          transition={{ duration: 0.2 }}
+        >
+          <h2 className="text-lg sm:text-xl font-bold text-zinc-950 mb-1.5">
+            {meta.title}
+          </h2>
+          <p className="text-xs text-zinc-500 mb-6">
+            {meta.description}
+          </p>
 
-      {/* Question Options dispatcher */}
-      <div className="mb-6">
-        {renderQuestionContent(meta.n, formData, updateField, updateHabit, updateProduct, updateProcedure)}
-      </div>
+          {/* Question Options dispatcher */}
+          <div className="mb-6">
+            {renderQuestionContent(meta.n, formData, updateField, updateHabit, updateProduct, updateProcedure)}
+          </div>
+        </motion.div>
+      </AnimatePresence>
 
       {/* Inline Live Voice & Intelligent Form Filler Status */}
       {(isListening || liveTranscript || isFormFillerActive) && (
@@ -294,7 +309,7 @@ export function QuestionCard() {
           )}
         </div>
       </div>
-    </div>
+    </motion.div>
   );
 }
 

@@ -370,7 +370,7 @@ PATIENT SPOKEN SPEECH CHUNK:
 "${transcript || ""}"
 ${image ? "\n[A prescription or lab report image is also attached.]" : ""}
 
-Evaluate if the speech chunk provides genuine answers for any unfilled fields (or explicit corrections). Extract and return valid JSON.`;
+Evaluate if the speech chunk OR the attached medical document provides genuine answers for any unfilled fields (or explicit corrections). Extract and return valid JSON.`;
 
     const contents: Array<Record<string, unknown>> = [];
     if (image) {
