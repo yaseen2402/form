@@ -121,9 +121,9 @@ export function DoctorSummaryPage() {
           <span className="text-[11px] font-mono uppercase tracking-widest text-zinc-400 block">
             Clinical Output · Page 02
           </span>
-          <h2 className="text-base font-bold text-zinc-950">
-            Trichology Pre-Consultation Dossier
-          </h2>
+          <h1 className="text-xl sm:text-2xl font-bold tracking-tight text-zinc-950">
+            Clinical Summary
+          </h1>
         </div>
 
         <button
