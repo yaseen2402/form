@@ -29,13 +29,6 @@ export default function Home() {
 
       <PrescriptionUploadModal />
 
-      {/* Minimal Footer */}
-      <footer className="border-t border-zinc-200 py-2.5 px-3 sm:px-4 text-[10px] sm:text-[11px] font-mono text-zinc-400 mt-auto">
-        <div className="max-w-2xl mx-auto flex items-center justify-between gap-2">
-          <span>GenoRoot · Intake Engine</span>
-          <span>16 Questions · Voice & Tap</span>
-        </div>
-      </footer>
     </div>
   );
 }
