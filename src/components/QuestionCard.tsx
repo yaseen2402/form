@@ -57,14 +57,14 @@ export function QuestionCard() {
     return (
       <div className="bg-white border border-zinc-200 p-4 sm:p-8 max-w-xl mx-auto">
         <div className="text-[11px] font-mono uppercase tracking-widest text-zinc-400 mb-2">
-          Clinical Intake · Step 00
+          Step 00
         </div>
 
         <h1 className="text-xl sm:text-2xl font-bold tracking-tight text-zinc-950 mb-2">
-          Patient Intake Assessment
+          Patient Profile
         </h1>
         <p className="text-xs sm:text-sm text-zinc-500 mb-6 leading-relaxed">
-          Provide your hair & scalp clinical background. Tap the &ldquo;Speak Answer&rdquo; button on any question to answer by voice, or tap options directly.
+          Provide your background. Tap &ldquo;Start Voice&rdquo; on any question to answer hands-free.
         </p>
 
         <div className="space-y-4">
