@@ -63,7 +63,7 @@ export function QuestionCard() {
           Patient Intake Assessment
         </h1>
         <p className="text-xs sm:text-sm text-zinc-500 mb-6 leading-relaxed">
-          Provide your hair & scalp clinical background. Tap the &ldquo;Speak Answer&rdquo; button on any question to answer by voice (English or Hinglish), or tap options directly.
+          Provide your hair & scalp clinical background. Tap the &ldquo;Speak Answer&rdquo; button on any question to answer by voice, or tap options directly.
         </p>
 
         <div className="space-y-4">
@@ -131,12 +131,6 @@ export function QuestionCard() {
               />
             </div>
           </div>
-
-          {formData.patient_sex === "male" && (
-            <p className="text-[11px] font-mono text-zinc-500 bg-zinc-50 p-2 border border-zinc-200">
-              Note: Female hormonal questions (menstrual / pregnancy) will be automatically bypassed.
-            </p>
-          )}
 
           <div className="flex gap-2 mt-4">
             <button

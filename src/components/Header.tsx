@@ -34,7 +34,7 @@ export function Header() {
           >
             <Camera className="w-3.5 h-3.5 shrink-0" />
             <span className="sm:hidden text-[11px]">Rx</span>
-            <span className="hidden sm:inline">Upload Rx</span>
+            <span className="hidden sm:inline">Upload</span>
           </button>
 
           {/* Audio toggle */}

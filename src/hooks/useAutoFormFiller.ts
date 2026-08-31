@@ -4,8 +4,8 @@ import { useEffect, useRef, useCallback } from "react";
 import { useIntake, getFormUnfilledStatus } from "@/context/IntakeContext";
 
 // Configuration for word threshold and periodic interval
-const WORD_THRESHOLD = 8; // Process every ~8 new words
-const HEARTBEAT_INTERVAL_MS = 3000; // Or every 3 seconds if new speech arrived
+const WORD_THRESHOLD = 12; // Process when ~12 new words have arrived
+const HEARTBEAT_INTERVAL_MS = 3000; // Or every 3 seconds if any new speech arrived
 
 export function useAutoFormFiller() {
   const {
@@ -25,12 +25,12 @@ export function useAutoFormFiller() {
   activeQuestionIndexRef.current = activeQuestionIndex;
 
   const isRunningRef = useRef(false);
-  const lastProcessedIndexRef = useRef(0);
+  const lastProcessedLengthRef = useRef(0);
 
-  // Core function that passes new speech to the intelligent LLM extractor
-  const processNewSpeech = useCallback(
-    async (chunk: string) => {
-      if (!chunk || chunk.trim().length < 3) return;
+  // Core function that passes the FULL speech context to the intelligent LLM extractor
+  const processFullSpeech = useCallback(
+    async (fullTranscript: string) => {
+      if (!fullTranscript || fullTranscript.trim().length < 3) return;
       if (isRunningRef.current) return;
 
       isRunningRef.current = true;
@@ -43,7 +43,7 @@ export function useAutoFormFiller() {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
-            transcript: chunk.trim(),
+            transcript: fullTranscript.trim(),
             alreadyFilledFields: alreadyFilled,
             unfilledFields: unfilled,
             currentFormData: formDataRef.current,
@@ -75,47 +75,45 @@ export function useAutoFormFiller() {
   useEffect(() => {
     if (!speechBuffer) return;
 
-    const unprocessed = speechBuffer.slice(lastProcessedIndexRef.current).trim();
+    const unprocessed = speechBuffer.slice(lastProcessedLengthRef.current).trim();
     const wordCount = unprocessed ? unprocessed.split(/\s+/).length : 0;
 
     if (wordCount >= WORD_THRESHOLD && !isRunningRef.current) {
-      const chunkToProcess = unprocessed;
-      lastProcessedIndexRef.current = speechBuffer.length;
-      processNewSpeech(chunkToProcess);
+      lastProcessedLengthRef.current = speechBuffer.length;
+      processFullSpeech(speechBuffer);
     }
-  }, [speechBuffer, processNewSpeech]);
+  }, [speechBuffer, processFullSpeech]);
 
   // Periodic Heartbeat trigger: checks every 3 seconds if any new words arrived
   useEffect(() => {
     const timer = setInterval(() => {
       if (!speechBuffer || isRunningRef.current) return;
 
-      const unprocessed = speechBuffer.slice(lastProcessedIndexRef.current).trim();
+      const unprocessed = speechBuffer.slice(lastProcessedLengthRef.current).trim();
       const wordCount = unprocessed ? unprocessed.split(/\s+/).length : 0;
 
       if (wordCount >= 3) {
         // At least 3 new words have arrived and user hasn't hit threshold yet
-        const chunkToProcess = unprocessed;
-        lastProcessedIndexRef.current = speechBuffer.length;
-        processNewSpeech(chunkToProcess);
+        lastProcessedLengthRef.current = speechBuffer.length;
+        processFullSpeech(speechBuffer);
       }
     }, HEARTBEAT_INTERVAL_MS);
 
     return () => clearInterval(timer);
-  }, [speechBuffer, processNewSpeech]);
+  }, [speechBuffer, processFullSpeech]);
 
   // Flush remaining speech when user finishes or stops
   const flushRemaining = useCallback(() => {
     if (!speechBuffer) return;
-    const unprocessed = speechBuffer.slice(lastProcessedIndexRef.current).trim();
+    const unprocessed = speechBuffer.slice(lastProcessedLengthRef.current).trim();
     if (unprocessed.length > 2 && !isRunningRef.current) {
-      lastProcessedIndexRef.current = speechBuffer.length;
-      processNewSpeech(unprocessed);
+      lastProcessedLengthRef.current = speechBuffer.length;
+      processFullSpeech(speechBuffer);
     }
-  }, [speechBuffer, processNewSpeech]);
+  }, [speechBuffer, processFullSpeech]);
 
   const resetFiller = useCallback(() => {
-    lastProcessedIndexRef.current = 0;
+    lastProcessedLengthRef.current = 0;
     clearProcessedSpeech();
   }, [clearProcessedSpeech]);
 
