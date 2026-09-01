@@ -4,18 +4,7 @@ import React, { useState } from "react";
 import { useIntake } from "@/context/IntakeContext";
 import { X, Upload, FileText, Loader2, Check } from "lucide-react";
 
-const SAMPLE_RX_1 = `Dr. Anita Sen, MD Dermatology & Trichology
-Rx:
-1. Topical Minoxidil 5% Solution - 1ml at night on scalp (Duration: 6 months)
-2. Ketoconazole 2% Medicated Shampoo - 3 times a week (Duration: 3 months)
-3. Follihair Multi-vitamin / Biotin 10mg - 1 tablet daily (Duration: 3 months)
-Notes: Patient reports good initial regrowth with minoxidil, no major scalp erythema.`;
 
-const SAMPLE_RX_2 = `Metropolis Diagnostic Lab Report
-Patient: Sunita Rao (Female, 34)
-Test: Serum Ferritin: 14 ng/mL (Low - Anemia)
-Thyroid Profile: TSH 7.8 uIU/mL (High - Hypothyroidism)
-USG Pelvis: Bilateral polycystic ovaries pattern (PCOS).`;
 
 export function PrescriptionUploadModal() {
   const {
@@ -123,26 +112,33 @@ export function PrescriptionUploadModal() {
           <label className="border border-dashed border-zinc-300 hover:border-zinc-950 p-4 flex flex-col items-center justify-center cursor-pointer transition bg-zinc-50 hover:bg-zinc-100/50">
             {previewUrl ? (
               <div className="flex flex-col items-center">
-                <img
-                  src={previewUrl}
-                  alt="Prescription preview"
-                  className="max-h-28 object-contain mb-2 border border-zinc-200"
-                />
+                {selectedFile?.type === "application/pdf" ? (
+                  <div className="p-4 bg-zinc-100 border border-zinc-200 mb-2 flex flex-col items-center justify-center">
+                    <FileText className="w-8 h-8 text-zinc-600" />
+                    <span className="text-[10px] mt-1 block font-mono text-center truncate max-w-[120px]">{selectedFile.name}</span>
+                  </div>
+                ) : (
+                  <img
+                    src={previewUrl}
+                    alt="Document preview"
+                    className="max-h-28 object-contain mb-2 border border-zinc-200"
+                  />
+                )}
                 <span className="text-xs font-mono text-zinc-900 underline">
-                  Replace image
+                  Replace document
                 </span>
               </div>
             ) : (
               <>
                 <FileText className="w-6 h-6 text-zinc-400 mb-1.5" />
-                <span className="text-xs font-medium text-zinc-800">
-                  Select image file (PNG / JPG)
+                <span className="text-xs font-medium text-zinc-800 text-center">
+                  Select file (PNG, JPG, PDF)
                 </span>
               </>
             )}
             <input
               type="file"
-              accept="image/*"
+              accept="image/*,application/pdf"
               className="hidden"
               onChange={handleFileChange}
             />
@@ -161,27 +157,6 @@ export function PrescriptionUploadModal() {
             placeholder="e.g. Minoxidil 5% topical solution for 6 months..."
             className="w-full text-xs p-2.5 border border-zinc-300 focus:outline-none focus:border-zinc-950 text-zinc-900 font-mono"
           />
-        </div>
-
-        {/* Sample presets */}
-        <div className="mb-4 border-t border-zinc-100 pt-3">
-          <span className="text-[11px] font-mono text-zinc-400 block mb-1.5 uppercase">
-            Test Samples:
-          </span>
-          <div className="space-y-1.5">
-            <button
-              onClick={() => setRxText(SAMPLE_RX_1)}
-              className="w-full text-left p-2 border border-zinc-200 hover:border-zinc-950 text-xs font-mono text-zinc-800 transition"
-            >
-              Rx Sample: Minoxidil 5% + Ketoconazole + Biotin
-            </button>
-            <button
-              onClick={() => setRxText(SAMPLE_RX_2)}
-              className="w-full text-left p-2 border border-zinc-200 hover:border-zinc-950 text-xs font-mono text-zinc-800 transition"
-            >
-              Lab Sample: Low Ferritin (Anemia) + TSH + PCOS
-            </button>
-          </div>
         </div>
 
         {successMsg && (
