@@ -56,10 +56,12 @@ export function useVoiceAssistant() {
           const currentWords = (finalChunk + " " + currentInterim).trim();
           if (currentWords) {
             setLiveTranscript(currentWords);
+            console.log("[Voice] Interim:", currentWords);
           }
 
           // Append completed speech directly to the decoupled speech buffer
           if (finalChunk.trim()) {
+            console.log("[Voice] Final Chunk emitted! Appending:", finalChunk.trim());
             appendSpeech(finalChunk.trim());
           }
         };
@@ -67,6 +69,9 @@ export function useVoiceAssistant() {
         recognition.onerror = (event: any) => {
           if (event.error === "no-speech") return;
           console.warn("Voice stream notice:", event.error);
+          if (event.error === "network") {
+             setIsListening(false);
+          }
         };
 
         recognition.onend = () => {

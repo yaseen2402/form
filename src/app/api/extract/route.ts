@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { GoogleGenAI } from "@google/genai";
 import { IntakeFormData, HabitsData, ProductRowKey, ProductUsage } from "@/types/intake";
+import { QUESTIONS_METADATA } from "@/lib/constants";
 
 // Heuristic extractor fallback when no GEMINI_API_KEY is configured
 function heuristicExtractor(text: string, currentData: Partial<IntakeFormData> = {}): {
@@ -285,12 +286,16 @@ function heuristicExtractor(text: string, currentData: Partial<IntakeFormData> =
 }
 
 export async function POST(req: NextRequest) {
+  let transcript = "";
+  let currentFormData = {};
+
   try {
     const body = await req.json();
+    transcript = body.transcript || "";
+    currentFormData = body.currentFormData || {};
+
     const {
-      transcript,
       image,
-      currentFormData,
       alreadyFilledFields,
       unfilledFields,
       activeQuestionIndex,
@@ -298,13 +303,19 @@ export async function POST(req: NextRequest) {
 
     const apiKey = process.env.GEMINI_API_KEY;
 
+    console.log("----------------------------------------");
+    console.log(`[API /extract] New Request - Q${activeQuestionIndex}`);
+    console.log(`[API /extract] Transcript: "${transcript.substring(0, 50)}${transcript.length > 50 ? '...' : ''}"`);
+    console.log(`[API /extract] Has Image: ${!!image}`);
+
     // If no API key is provided, use the state-aware heuristic parser
     if (!apiKey) {
+      console.log("[API /extract] No API Key found, using Heuristic Fallback");
       const result = heuristicExtractor(transcript || "", currentFormData || {});
       return NextResponse.json(result);
     }
 
-    // Call Gemini 2.5 Flash via official SDK
+    // Call Gemini Flash via official SDK
     const ai = new GoogleGenAI({ apiKey });
 
     const systemInstruction = `
@@ -330,12 +341,13 @@ INTAKE SCHEMA SPECIFICATION:
 14. past_treatment_side_effects ("yes" | "no", detail if yes)
 15. sample_type ("Saliva" | "Blood" | "Either")
 16. consent ("yes" | "no")
-Patient Demographics: patient_name (string), patient_sex ("male" | "female" | "other"), patient_age (number)
+0. Demographics: patient_name (string), patient_sex ("male" | "female" | "other"), patient_age (number)
 
 CRITICAL STATE-AWARE DECISION RULES:
-1. INTELLIGENT FILTERING - DO NOT DUMP RAW TEXT:
-   - Carefully evaluate the patient's speech. If they are making casual chatter, conversational filler ("uhh", "let me think", "what was I saying", "yeah okay"), or talking about unrelated topics, DO NOT touch any fields! Return empty extractedFields: {}.
-   - Only populate fields when the patient provides genuine, explicit clinical facts.
+1. INTELLIGENT FILTERING & PHONETIC MATCHING:
+   - You must differentiate between casual conversational filler ("uhh", "yeah okay") and actual answers.
+   - HOWEVER, Speech-To-Text (STT) often completely mangles words (e.g., "over here" instead of "over a year", "receiving airline" instead of "receding hairline", "minok double" instead of "minoxidil").
+   - You MUST use aggressive phonetic and fuzzy matching. If a weird or out-of-context phrase sounds phonetically similar to one of the exact schema options, ASSUME it is a STT error and map it to that option! Do not reject it as "not a clinical fact".
 2. FOCUS ON UNFILLED FIELDS:
    - You are provided with a list of "unfilledFields". Prioritize checking if the speech provides answers for any of these pending questions.
 3. PRESERVE EXISTING FILLED FIELDS:
@@ -344,36 +356,35 @@ CRITICAL STATE-AWARE DECISION RULES:
    - COVID, Dengue, Typhoid, or high fever implies BOTH "Fever with illness (COVID, Dengue, Typhoid)" in Q10 AND "Sudden excessive shedding" (Telogen Effluvium) in Q4.
    - If patient is male, menstrual_cycle and pregnancy_related must be "Not applicable".
    - If patient mentions PCOS or PCOD, patient_sex is "female".
-
-Return ONLY valid JSON matching this TypeScript structure:
-{
-  "extractedFields": Partial<IntakeFormData>,
-  "fieldsUpdated": string[], // names of fields that were populated (e.g. ["Patient Age: 52", "Family History: Father"])
-  "doctorVoiceResponse": string, // optional brief confirmation
-  "suggestedNextQuestion": number // 1 to 16
-}
+- ONLY output a raw JSON object containing 4 keys: "extractedFields", "fieldsUpdated", "doctorVoiceResponse", "suggestedNextQuestion". Do not wrap in markdown or backticks.
+- "extractedFields": An object containing ONLY the fields that have NEWLY extracted data from this chunk of speech or document. Keys must exactly match the schema above.
+- "fieldsUpdated": Array of strings describing what you just updated (e.g. ["Patient Age", "Duration of Hair Loss"]). Keep it short.
+- "doctorVoiceResponse": A very short, natural acknowledgment of the new information, e.g. "Got it, shedding started 6 months ago."
+- "suggestedNextQuestion": Integer (0-16) for which question the form should jump to next, based on what is still missing.
+- Context Awareness: You are receiving a rolling transcript. The user might correct themselves. You must update fields if they correct something.
+- Do NOT overwrite fields in \`alreadyFilledFields\` unless the patient explicitly corrects or changes their previous statement.
 `;
 
+    const activeMeta = QUESTIONS_METADATA.find(q => q.n === activeQuestionIndex);
+    const activeQuestionText = activeMeta ? activeMeta.title : "None";
+
     const userPrompt = `
-ALREADY FILLED FIELDS:
-${JSON.stringify(alreadyFilledFields || [], null, 2)}
+ACTIVE QUESTION ON SCREEN: Q${activeQuestionIndex} - "${activeQuestionText}"
+ALREADY FILLED FIELDS: ${JSON.stringify(alreadyFilledFields)}
+UNFILLED FIELDS: ${JSON.stringify(unfilledFields)}
+CURRENT STATE: ${JSON.stringify(currentFormData)}
 
-UNFILLED FIELDS PENDING ANSWERS:
-${JSON.stringify(unfilledFields || [], null, 2)}
+CRITICAL CONTEXTUAL INFERENCE RULES:
+1. If the user provides a raw number (e.g. "24") or a simple answer without context, ASSUME they are answering the "ACTIVE QUESTION ON SCREEN". For example, if the active question is "At what age did you first notice hair loss?" and the transcript says "24", you MUST extract {"age_hair_loss_began": 24}.
 
-CURRENT FULL FORM DATA:
-${JSON.stringify(currentFormData || {}, null, 2)}
+NEW SPEECH / DOCUMENT TO PROCESS:
+"${transcript}"
 
-ACTIVE QUESTION BEING VIEWED: ${activeQuestionIndex || 1}
+Evaluate if the speech chunk OR the attached medical document provides genuine answers to any UNFILLED FIELDS or corrections to ALREADY FILLED FIELDS.
+`;
 
-PATIENT SPOKEN SPEECH CHUNK:
-"${transcript || ""}"
-${image ? "\n[A prescription or lab report image is also attached.]" : ""}
-
-Evaluate if the speech chunk OR the attached medical document provides genuine answers for any unfilled fields (or explicit corrections). Extract and return valid JSON.`;
-
-    const contents: Array<Record<string, unknown>> = [];
-    if (image) {
+    let contents = [];
+    if (image && image.base64Data) {
       contents.push({
         role: "user",
         parts: [
@@ -398,10 +409,12 @@ Evaluate if the speech chunk OR the attached medical document provides genuine a
     const maxAttempts = 2;
     let lastError = null;
 
+    console.log("[API /extract] Sending request to Gemini 3.6 Flash...");
+
     while (attempts < maxAttempts) {
       try {
         const response = await ai.models.generateContent({
-          model: "gemini-3.6-flash",
+          model: "gemini-3.5-flash-lite",
           contents: contents as any,
           config: {
             systemInstruction,
@@ -412,11 +425,13 @@ Evaluate if the speech chunk OR the attached medical document provides genuine a
 
         const responseText = response.text || "{}";
         parsed = JSON.parse(responseText);
+        
+        console.log(`[API /extract] Gemini Success! Updated fields: ${parsed.fieldsUpdated?.join(', ') || 'None'}`);
         break; // Successfully got valid JSON, break out of loop
       } catch (err) {
         lastError = err;
         attempts++;
-        console.warn(`Gemini extraction failed (Attempt ${attempts}/${maxAttempts}). Retrying...`, err);
+        console.warn(`[API /extract] Extraction failed (Attempt ${attempts}/${maxAttempts}). Retrying...`, err);
       }
     }
 
@@ -426,9 +441,9 @@ Evaluate if the speech chunk OR the attached medical document provides genuine a
 
     return NextResponse.json(parsed);
   } catch (error: unknown) {
-    console.error("Gemini API error in /api/extract:", error);
-    const errorMessage = error instanceof Error ? error.message : String(error);
-    const fallback = heuristicExtractor(errorMessage, {});
+    console.error("[API /extract] Critical Error - Falling back to Heuristic Parser:", error instanceof Error ? error.message : String(error));
+    const fallback = heuristicExtractor(transcript, currentFormData);
+    console.log(`[API /extract] Fallback extracted: ${fallback.fieldsUpdated?.join(', ') || 'None'}`);
     return NextResponse.json(fallback);
   }
 }

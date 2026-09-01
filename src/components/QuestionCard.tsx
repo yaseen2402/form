@@ -46,7 +46,6 @@ export function QuestionCard() {
   const handleMicToggle = () => {
     if (isListening) {
       stopListening();
-      flushRemaining();
     } else {
       startListening();
     }
@@ -137,14 +136,22 @@ export function QuestionCard() {
             <button
               type="button"
               onClick={handleMicToggle}
+              disabled={isFormFillerActive}
               className={`flex items-center justify-center gap-1.5 py-2.5 px-3 border text-xs font-mono transition ${
-                isListening
+                isFormFillerActive
+                  ? "bg-zinc-100 text-zinc-400 border-zinc-200 cursor-not-allowed"
+                  : isListening
                   ? "bg-zinc-950 text-white border-zinc-950 animate-pulse"
                   : "bg-white border-zinc-300 hover:border-zinc-950 text-zinc-800"
               }`}
               title="Start hands-free continuous voice"
             >
-              {isListening ? (
+              {isFormFillerActive ? (
+                <>
+                  <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                  <span>Processing...</span>
+                </>
+              ) : isListening ? (
                 <>
                   <MicOff className="w-3.5 h-3.5" />
                   <span>Listening...</span>

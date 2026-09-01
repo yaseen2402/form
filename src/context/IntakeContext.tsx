@@ -129,7 +129,7 @@ interface IntakeContextType {
   speechBuffer: string;
   isFormFillerActive: boolean;
   appendSpeech: (text: string) => void;
-  clearProcessedSpeech: () => void;
+  clearProcessedSpeech: (processedLength?: number) => void;
   setIsFormFillerActive: (val: boolean) => void;
 
   // Setters & Actions
@@ -193,8 +193,12 @@ export function IntakeProvider({ children }: { children: React.ReactNode }) {
     setSpeechBuffer((prev) => (prev ? prev + " " + text : text));
   }, []);
 
-  const clearProcessedSpeech = useCallback(() => {
-    setSpeechBuffer("");
+  const clearProcessedSpeech = useCallback((processedLength?: number) => {
+    if (processedLength) {
+      setSpeechBuffer((prev) => prev.slice(processedLength).trim());
+    } else {
+      setSpeechBuffer("");
+    }
   }, []);
 
   // Hydrate from localStorage
@@ -334,8 +338,7 @@ export function IntakeProvider({ children }: { children: React.ReactNode }) {
       agentReply?: string,
       suggestedNextQuestion?: number
     ) => {
-      let nextState: IntakeFormData | null = null;
-
+      // We calculate the next state synchronously so we can use it for auto-advancement
       setFormData((prev) => {
         const next = { ...prev };
 
@@ -357,24 +360,18 @@ export function IntakeProvider({ children }: { children: React.ReactNode }) {
           next.pregnancy_related = "Not applicable";
         }
 
-        nextState = next;
-        return next;
-      });
+        // --- Execute Auto-Advancement logic inside the updater where we have the guaranteed next state ---
+        if (fieldsUpdated.length > 0) {
+          setRecentFieldUpdates(fieldsUpdated);
+          setTimeout(() => setRecentFieldUpdates([]), 4500);
+        }
 
-      if (fieldsUpdated.length > 0) {
-        setRecentFieldUpdates(fieldsUpdated);
-        setTimeout(() => setRecentFieldUpdates([]), 4500);
-      }
+        if (agentReply) {
+          setLastAgentReply(agentReply);
+        }
 
-      if (agentReply) {
-        setLastAgentReply(agentReply);
-      }
-
-      // Auto-advancement when active question is answered
-      if (nextState) {
-        const state = nextState as IntakeFormData;
-        const isMale = state.patient_sex === "male";
-        const currentAnswered = checkQuestionAnswered(activeQuestionIndex, state);
+        const isMale = next.patient_sex === "male";
+        const currentAnswered = checkQuestionAnswered(activeQuestionIndex, next);
 
         if (currentAnswered) {
           let nextUnanswered = activeQuestionIndex + 1;
@@ -383,7 +380,7 @@ export function IntakeProvider({ children }: { children: React.ReactNode }) {
               nextUnanswered++;
               continue;
             }
-            if (!checkQuestionAnswered(nextUnanswered, state)) {
+            if (!checkQuestionAnswered(nextUnanswered, next)) {
               break;
             }
             nextUnanswered++;
@@ -401,7 +398,9 @@ export function IntakeProvider({ children }: { children: React.ReactNode }) {
             setActiveQuestionIndex(suggestedNextQuestion);
           }
         }
-      }
+
+        return next;
+      });
     },
     [activeQuestionIndex]
   );
