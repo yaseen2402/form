@@ -97,9 +97,7 @@ export function PrescriptionUploadModal() {
           <X className="w-4 h-4" />
         </button>
 
-        <div className="text-[11px] font-mono uppercase tracking-widest text-zinc-400 mb-1">
-          Optical Analysis
-        </div>
+
         <h3 className="text-base font-bold text-zinc-950 mb-1">
           Upload Medical Document
         </h3>

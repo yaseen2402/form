@@ -37,15 +37,7 @@ export function Header() {
             <span className="hidden sm:inline">Upload</span>
           </button>
 
-          {/* Audio toggle */}
-          <button
-            onClick={() => setIsMuted(!isMuted)}
-            className="p-1.5 border border-zinc-200 hover:border-zinc-950 text-zinc-600 hover:text-zinc-950 transition shrink-0"
-            title={isMuted ? "Audio Muted" : "Audio Active"}
-            aria-label="Toggle Audio"
-          >
-            {isMuted ? <VolumeX className="w-3.5 h-3.5" /> : <Volume2 className="w-3.5 h-3.5" />}
-          </button>
+
 
           {/* Reset */}
           <button
